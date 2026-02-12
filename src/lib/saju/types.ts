@@ -228,3 +228,43 @@ export interface FortuneResponse {
   sajuData: SajuData;
   readingId: string | null;
 }
+
+// === 귀신 유형 시스템 ===
+
+export type GhostTypeId =
+  | 'cheBaek' | 'ikGwi' | 'gwangIn' | 'sikMae' | 'myeongPan'
+  | 'muMyeonGwi' | 'yaChokGwi' | 'galHon' | 'gyeonRyeong'
+  | 'gwiMun' | 'hwangCheonGaek' | 'jipMae' | 'bulGaSal' | 'chipRyong';
+
+export interface GhostDesire {
+  surfaceLabel: string;
+  surface: string;
+  truthLabel: string;
+  truth: string;
+}
+
+export interface GhostTypeDef {
+  id: GhostTypeId;
+  hanja: string;
+  reading: string;
+  meaning: string;
+  tagline: string;
+  desire: GhostDesire;
+  colors: { primary: string; secondary: string };
+  teaserLines: string[];
+  ghostMessage: string;
+  kimQuote: string;
+}
+
+export interface GhostClassification {
+  typeId: GhostTypeId;
+  affinityScore: number;
+  affinityDescription: string;
+  matchReason: string;
+  detectionLines: string[];
+}
+
+export interface SajuAnalysisResponse {
+  sajuData: SajuDataV2;
+  ghostClassification: GhostClassification;
+}

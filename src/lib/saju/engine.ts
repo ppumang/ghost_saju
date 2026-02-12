@@ -56,6 +56,24 @@ function convertHideGan(cnGan: string): string {
 }
 
 /**
+ * 음력 날짜 생성 — 윤달이 존재하지 않으면 일반 달로 fallback.
+ */
+function createLunarSafe(
+  year: number, month: number, day: number,
+  hour: number, minute: number, isLeapMonth: boolean,
+): InstanceType<typeof Lunar> {
+  if (isLeapMonth) {
+    try {
+      return Lunar.fromYmdHms(year, -month, day, hour, minute, 0);
+    } catch {
+      // 해당 연도에 윤달이 없으면 일반 달로 fallback
+      return Lunar.fromYmdHms(year, month, day, hour, minute, 0);
+    }
+  }
+  return Lunar.fromYmdHms(year, month, day, hour, minute, 0);
+}
+
+/**
  * 메인 사주 계산 엔진
  */
 export function calculateSaju(input: BirthInput): SajuData {
@@ -70,8 +88,7 @@ export function calculateSaju(input: BirthInput): SajuData {
       const solar = Solar.fromYmdHms(input.year, input.month, input.day, 12, 0, 0);
       lunar = solar.getLunar();
     } else {
-      const lunarMonth = input.isLeapMonth ? -input.month : input.month;
-      lunar = Lunar.fromYmdHms(input.year, lunarMonth, input.day, 12, 0, 0);
+      lunar = createLunarSafe(input.year, input.month, input.day, 12, 0, input.isLeapMonth);
     }
   } else {
     if (input.calendarType === 'solar') {
@@ -81,11 +98,7 @@ export function calculateSaju(input: BirthInput): SajuData {
       );
       lunar = solar.getLunar();
     } else {
-      const lunarMonth = input.isLeapMonth ? -input.month : input.month;
-      lunar = Lunar.fromYmdHms(
-        input.year, lunarMonth, input.day,
-        resolved.hour, resolved.minute, 0
-      );
+      lunar = createLunarSafe(input.year, input.month, input.day, resolved.hour, resolved.minute, input.isLeapMonth);
     }
   }
 
