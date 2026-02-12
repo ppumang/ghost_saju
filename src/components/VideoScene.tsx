@@ -80,7 +80,7 @@ export default function VideoScene({ onProceed }: VideoSceneProps) {
               transition={{ duration: 0.8, ease: "easeOut" }}
             >
               <p className={styles.description}>
-                故 김귀자 : 1920년 출생. 청송의 귀신 할매로 유명했으며
+                故 김귀자 — 1920년 출생. 청송의 귀신 할매로 유명했으며
                 사주 명리학과 자신만의 &ldquo;귀신 풀이&rdquo;를 기반으로 한
                 사주 풀이로 1990년대 지역에 줄을 설 정도로 유명한
                 역술가였다 한다.

@@ -58,7 +58,7 @@ export default function IntroScene({ onComplete }: IntroSceneProps) {
         >
           <img
             src="/images/grandmother.jpg"
-            alt="고 김귀자 할머니"
+            alt="故 김귀자 할머니"
             className={styles.portrait}
           />
         </motion.div>
