@@ -1,11 +1,20 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import { motion } from "framer-motion";
 import styles from "./ResultScene.module.css";
+import { SECTIONS } from "@/lib/saju/section-constants";
+
+interface FortuneSection {
+  id: string;
+  title: string;
+  content: string;
+  order: number;
+}
 
 interface ResultSceneProps {
-  text: string;
+  sections: FortuneSection[];
+  readingId?: string | null;
   onRestart: () => void;
 }
 
@@ -22,10 +31,70 @@ function renderBold(text: string) {
   );
 }
 
-export default function ResultScene({ text, onRestart }: ResultSceneProps) {
+// 섹션 정의에서 한자 아이콘 가져오기
+const sectionIconMap = Object.fromEntries(
+  SECTIONS.map((s) => [s.id, s.hanjaIcon])
+);
+
+export default function ResultScene({
+  sections,
+  readingId,
+  onRestart,
+}: ResultSceneProps) {
   const [review, setReview] = useState("");
   const [submitted, setSubmitted] = useState(false);
   const [submitting, setSubmitting] = useState(false);
+  const [activeSection, setActiveSection] = useState(sections[0]?.id || "");
+  const sectionRefs = useRef<Record<string, HTMLElement | null>>({});
+  const tocRef = useRef<HTMLDivElement>(null);
+
+  // IntersectionObserver로 현재 보이는 섹션 추적
+  useEffect(() => {
+    const observers: IntersectionObserver[] = [];
+
+    for (const section of sections) {
+      const el = sectionRefs.current[section.id];
+      if (!el) continue;
+
+      const observer = new IntersectionObserver(
+        (entries) => {
+          for (const entry of entries) {
+            if (entry.isIntersecting) {
+              setActiveSection(section.id);
+            }
+          }
+        },
+        { threshold: 0.3, rootMargin: "-80px 0px -50% 0px" }
+      );
+
+      observer.observe(el);
+      observers.push(observer);
+    }
+
+    return () => observers.forEach((o) => o.disconnect());
+  }, [sections]);
+
+  // 활성 TOC 아이템 스크롤
+  useEffect(() => {
+    if (!tocRef.current) return;
+    const activeEl = tocRef.current.querySelector(
+      `[data-section-id="${activeSection}"]`
+    );
+    if (activeEl) {
+      activeEl.scrollIntoView({
+        behavior: "smooth",
+        block: "nearest",
+        inline: "center",
+      });
+    }
+  }, [activeSection]);
+
+  const scrollToSection = useCallback((id: string) => {
+    const el = sectionRefs.current[id];
+    if (el) {
+      el.scrollIntoView({ behavior: "smooth", block: "start" });
+    }
+  }, []);
 
   const handleReviewSubmit = async () => {
     if (!review.trim() || submitting) return;
@@ -34,11 +103,10 @@ export default function ResultScene({ text, onRestart }: ResultSceneProps) {
       await fetch("/api/review", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ review: review.trim(), timestamp: new Date().toISOString() }),
+        body: JSON.stringify({ review: review.trim(), readingId }),
       });
       setSubmitted(true);
     } catch {
-      // 실패해도 조용히 처리
       setSubmitted(true);
     } finally {
       setSubmitting(false);
@@ -53,13 +121,61 @@ export default function ResultScene({ text, onRestart }: ResultSceneProps) {
       exit={{ opacity: 0 }}
       transition={{ duration: 1, ease: "easeInOut" }}
     >
+      {/* TOC - 모바일: 상단 가로 스크롤, 데스크탑: 좌측 사이드바 */}
+      <nav className={styles.toc} ref={tocRef}>
+        {sections.map((section) => (
+          <button
+            key={section.id}
+            data-section-id={section.id}
+            className={`${styles.tocItem} ${
+              activeSection === section.id ? styles.tocItemActive : ""
+            }`}
+            onClick={() => scrollToSection(section.id)}
+          >
+            <span className={styles.tocIcon}>
+              {sectionIconMap[section.id] || ""}
+            </span>
+            <span className={styles.tocLabel}>{section.title}</span>
+          </button>
+        ))}
+      </nav>
+
+      {/* 메인 컨텐츠 */}
       <div className={styles.content}>
         <h1 className={styles.title}>귀신사주</h1>
-        <hr className={styles.divider} />
-        <p className={styles.text}>{renderBold(text)}</p>
+        <div className={styles.titleDivider} />
 
+        {/* 13개 섹션 */}
+        {sections.map((section) => (
+          <section
+            key={section.id}
+            ref={(el) => { sectionRefs.current[section.id] = el; }}
+            className={styles.section}
+            id={`section-${section.id}`}
+          >
+            <div className={styles.sectionHeader}>
+              <span className={styles.sectionIcon}>
+                {sectionIconMap[section.id] || ""}
+              </span>
+              <h2 className={styles.sectionTitle}>{section.title}</h2>
+            </div>
+            <div className={styles.sectionContent}>
+              {section.content.split("\n").map((paragraph, i) => {
+                const trimmed = paragraph.trim();
+                if (!trimmed) return <br key={i} />;
+                return (
+                  <p key={i} className={styles.paragraph}>
+                    {renderBold(trimmed)}
+                  </p>
+                );
+              })}
+            </div>
+            <div className={styles.sectionDivider} />
+          </section>
+        ))}
+
+        {/* 리뷰 섹션 */}
         <div className={styles.reviewSection}>
-          <hr className={styles.reviewDivider} />
           <h3 className={styles.reviewTitle}>리얼 리뷰를 남겨주세요</h3>
           <p className={styles.reviewSub}>
             사주 풀이를 받으신 소감을 자유롭게 남겨주세요
@@ -84,9 +200,7 @@ export default function ResultScene({ text, onRestart }: ResultSceneProps) {
               </button>
             </>
           ) : (
-            <p className={styles.reviewThanks}>
-              소중한 리뷰 감사합니다.
-            </p>
+            <p className={styles.reviewThanks}>소중한 리뷰 감사합니다.</p>
           )}
         </div>
 

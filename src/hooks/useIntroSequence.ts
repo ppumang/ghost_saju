@@ -19,8 +19,17 @@ export interface BirthData {
   gender: "male" | "female";
 }
 
+export interface FortuneSection {
+  id: string;
+  title: string;
+  content: string;
+  order: number;
+}
+
 export interface FortuneResult {
-  text: string;
+  sections: FortuneSection[];
+  sajuData?: Record<string, unknown>;
+  readingId?: string | null;
 }
 
 export function useIntroSequence() {
@@ -58,7 +67,11 @@ export function useIntroSequence() {
       }
 
       const result = await res.json();
-      setFortuneResult({ text: result.text });
+      setFortuneResult({
+        sections: result.sections,
+        sajuData: result.sajuData,
+        readingId: result.readingId,
+      });
       setScene("result");
     } catch (e) {
       setError(

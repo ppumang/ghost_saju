@@ -24,11 +24,12 @@ export default function Home() {
 
   useEffect(() => {
     if (scene === "result") {
-      document.body.style.background = "#fafaf5";
-      document.body.style.overflow = "auto";
+      document.body.style.background = "#0a0a0a";
+      document.body.className = "scene-scroll";
+      window.scrollTo(0, 0);
     } else {
       document.body.style.background = "#000000";
-      document.body.style.overflow = "hidden";
+      document.body.className = "scene-locked";
     }
   }, [scene]);
 
@@ -59,7 +60,8 @@ export default function Home() {
         {scene === "result" && fortuneResult && (
           <ResultScene
             key="result"
-            text={fortuneResult.text}
+            sections={fortuneResult.sections}
+            readingId={fortuneResult.readingId}
             onRestart={restart}
           />
         )}
