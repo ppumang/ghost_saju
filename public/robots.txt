@@ -1,0 +1,6 @@
+User-agent: *
+Allow: /
+Disallow: /api/
+Disallow: /payment/
+
+Sitemap: https://ghostsaju.com/sitemap.xml
