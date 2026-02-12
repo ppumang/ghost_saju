@@ -117,7 +117,6 @@ export function useIntroSequence() {
   }, []);
 
   const restart = useCallback(() => {
-    track("restart_clicked");
     setFortuneResult(null);
     setResultPhase("free");
     setError(null);
