@@ -4,6 +4,7 @@ import { useState, useCallback } from "react";
 import type { SajuDataV2, GhostClassification } from "@/lib/saju/types";
 import { track } from "@/lib/mixpanel";
 import { notifySlack } from "@/lib/slack";
+import { trackInitiateCheckout } from "@/lib/meta-pixel";
 
 export type SceneState =
   | "intro"
@@ -75,6 +76,7 @@ export function useIntroSequence() {
       calendar_type: data.calendarType,
     });
     notifySlack(`🔮 [생년월일 입력] ${data.gender === "male" ? "남" : "여"} ${data.year}년 ${data.month}월 ${data.day}일 ${data.hour}`);
+    trackInitiateCheckout();
 
     try {
       const res = await fetch("/api/saju", {
