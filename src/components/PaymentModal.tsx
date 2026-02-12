@@ -8,6 +8,7 @@ import {
 import { useEffect, useRef, useState } from "react";
 import { track } from "@/lib/mixpanel";
 import { notifySlack } from "@/lib/slack";
+import { trackAddToCart } from "@/lib/meta-pixel";
 import { PRODUCTS } from "@/lib/payment/constants";
 import type { SajuDataV2, GhostClassification } from "@/lib/saju/types";
 import styles from "./PaymentModal.module.css";
@@ -114,6 +115,7 @@ export default function PaymentModal({
     try {
       track("payment_started", { email });
       notifySlack(`💰 [결제 시작] ${email}`);
+      trackAddToCart();
 
       // 1. PENDING 구매 레코드 생성 (sajuData를 DB에 저장)
       const orderId = generateOrderId();

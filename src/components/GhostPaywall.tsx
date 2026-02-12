@@ -6,6 +6,7 @@ import type { GhostTypeDef, SajuDataV2, GhostClassification } from "@/lib/saju/t
 import PaymentModal from "./PaymentModal";
 import { track } from "@/lib/mixpanel";
 import { notifySlack } from "@/lib/slack";
+import { trackViewContent, trackInitiateCheckout } from "@/lib/meta-pixel";
 
 interface GhostPaywallProps {
   ghostType: GhostTypeDef;
@@ -28,6 +29,7 @@ export default function GhostPaywall({
     if (!hasTracked.current) {
       hasTracked.current = true;
       track("paywall_viewed", { ghost_type: ghostType.id });
+      trackViewContent("귀신사주 프리뷰");
     }
   }, [ghostType.id]);
 
@@ -43,6 +45,7 @@ export default function GhostPaywall({
     setEmailError("");
     track("payment_modal_opened", { email, ghost_type: ghostType.id });
     notifySlack(`💳 [결제 모달 오픈] ${email} / 귀신: ${ghostType.reading}`);
+    trackInitiateCheckout();
     setShowPayment(true);
   };
 

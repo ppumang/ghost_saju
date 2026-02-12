@@ -4,6 +4,7 @@ import { useSearchParams } from 'next/navigation';
 import { useEffect, useState, useRef, Suspense } from 'react';
 import { track } from '@/lib/mixpanel';
 import { notifySlack } from '@/lib/slack';
+import { trackPurchase } from '@/lib/meta-pixel';
 
 type Stage = 'confirming' | 'complete' | 'error';
 
@@ -72,6 +73,7 @@ function SuccessContent() {
         // 이벤트: 결제 완료
         track('payment_completed', { email, purchaseId });
         notifySlack(`✅ [결제 완료] ${email} / 주문: ${orderId}`);
+        trackPurchase();
 
         // Step 3: 빈 reading 생성 + 이메일 즉시 발송
         if (sajuData) {
