@@ -1,0 +1,121 @@
+.overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 10000;
+  background: #0a0a0a;
+  display: flex;
+  flex-direction: column;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 1rem 1.2rem;
+  border-bottom: 1px solid #1a1a1a;
+  flex-shrink: 0;
+}
+
+.headerTitle {
+  font-family: var(--font-primary);
+  font-size: 1rem;
+  color: #d4c5a9;
+  letter-spacing: 0.08em;
+  font-weight: 700;
+}
+
+.closeButton {
+  background: none;
+  border: none;
+  color: #888;
+  font-size: 1.5rem;
+  cursor: pointer;
+  padding: 0.25rem;
+  line-height: 1;
+}
+
+.body {
+  flex: 1;
+  padding: 1.5rem 1.2rem;
+  padding-bottom: 6rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+  max-width: 540px;
+  width: 100%;
+  margin: 0 auto;
+}
+
+.productInfo {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 1.2rem;
+  border: 1px solid #1a1a1a;
+  background: #111;
+}
+
+.productName {
+  font-family: var(--font-primary);
+  font-size: 0.95rem;
+  color: #d4c5a9;
+  letter-spacing: 0.05em;
+}
+
+.productPrice {
+  font-family: var(--font-primary);
+  font-size: 1.1rem;
+  color: #d4c5a9;
+  font-weight: 700;
+}
+
+.widgetContainer {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.footer {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  padding: 1rem 1.2rem;
+  padding-bottom: max(1rem, env(safe-area-inset-bottom));
+  background: #0a0a0a;
+  border-top: 1px solid #1a1a1a;
+  z-index: 10001;
+}
+
+.payButton {
+  width: 100%;
+  max-width: 540px;
+  margin: 0 auto;
+  display: block;
+  padding: 1rem;
+  background: #8b0000;
+  border: none;
+  color: #d4c5a9;
+  font-family: var(--font-primary);
+  font-size: 1rem;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  cursor: pointer;
+  transition: opacity 0.3s;
+  min-height: 52px;
+}
+
+.payButton:disabled {
+  background: #333;
+  cursor: not-allowed;
+  opacity: 0.5;
+}
+
+.errorText {
+  font-family: var(--font-primary);
+  font-size: 0.8rem;
+  color: #8b0000;
+  text-align: center;
+}

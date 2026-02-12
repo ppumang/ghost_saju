@@ -1,12 +1,9 @@
 import { NextResponse } from "next/server";
-import { promises as fs } from "fs";
-import path from "path";
-
-const REVIEWS_FILE = path.join(process.cwd(), "reviews.json");
+import { saveReview, getRecentReviews } from "@/lib/supabase/queries";
 
 export async function POST(request: Request) {
   try {
-    const { review, timestamp } = await request.json();
+    const { review, readingId } = await request.json();
 
     if (!review || typeof review !== "string") {
       return NextResponse.json(
@@ -15,21 +12,12 @@ export async function POST(request: Request) {
       );
     }
 
-    let reviews: Array<{ review: string; timestamp: string }> = [];
+    const success = await saveReview(review.slice(0, 500), readingId);
 
-    try {
-      const data = await fs.readFile(REVIEWS_FILE, "utf-8");
-      reviews = JSON.parse(data);
-    } catch {
-      // 파일이 없으면 빈 배열로 시작
+    if (!success) {
+      // Supabase 미설정 시 조용히 성공 처리
+      return NextResponse.json({ success: true });
     }
-
-    reviews.push({
-      review: review.slice(0, 500),
-      timestamp: timestamp || new Date().toISOString(),
-    });
-
-    await fs.writeFile(REVIEWS_FILE, JSON.stringify(reviews, null, 2), "utf-8");
 
     return NextResponse.json({ success: true });
   } catch (error) {
@@ -43,8 +31,7 @@ export async function POST(request: Request) {
 
 export async function GET() {
   try {
-    const data = await fs.readFile(REVIEWS_FILE, "utf-8");
-    const reviews = JSON.parse(data);
+    const reviews = await getRecentReviews(20);
     return NextResponse.json(reviews);
   } catch {
     return NextResponse.json([]);

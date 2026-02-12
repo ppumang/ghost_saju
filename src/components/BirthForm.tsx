@@ -1,7 +1,8 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
+import { track } from "@/lib/mixpanel";
 import { birthTimeOptions } from "@/data/birthTimeOptions";
 import type { BirthData } from "@/hooks/useIntroSequence";
 import styles from "./BirthForm.module.css";
@@ -19,6 +20,14 @@ const days = Array.from({ length: 31 }, (_, i) => i + 1);
 export default function BirthForm({ onSubmit, error }: BirthFormProps) {
   const [showDisclaimer, setShowDisclaimer] = useState(true);
   const [gender, setGender] = useState<"male" | "female" | "">("");
+  const hasTracked = useRef(false);
+
+  useEffect(() => {
+    if (!hasTracked.current) {
+      hasTracked.current = true;
+      track("birth_form_viewed");
+    }
+  }, []);
   const [calendarType, setCalendarType] = useState<"solar" | "lunar">("solar");
   const [isLeapMonth, setIsLeapMonth] = useState(false);
   const [year, setYear] = useState("");
@@ -80,7 +89,10 @@ export default function BirthForm({ onSubmit, error }: BirthFormProps) {
               <button
                 type="button"
                 className={styles.disclaimerButton}
-                onClick={() => setShowDisclaimer(false)}
+                onClick={() => {
+                  track("disclaimer_confirmed");
+                  setShowDisclaimer(false);
+                }}
               >
                 확인
               </button>

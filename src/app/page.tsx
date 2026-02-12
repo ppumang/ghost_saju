@@ -1,18 +1,20 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
 import { AnimatePresence } from "framer-motion";
 import { useIntroSequence } from "@/hooks/useIntroSequence";
+import { track, registerUTMSuperProperties, hasUTMParams } from "@/lib/mixpanel";
 import IntroScene from "@/components/IntroScene";
 import VideoScene from "@/components/VideoScene";
 import BirthForm from "@/components/BirthForm";
 import LoadingScene from "@/components/LoadingScene";
 import ResultScene from "@/components/ResultScene";
-import SkipButton from "@/components/SkipButton";
+
 
 export default function Home() {
   const {
     scene,
+    resultPhase,
     fortuneResult,
     error,
     onIntroComplete,
@@ -21,6 +23,19 @@ export default function Home() {
     submitBirthData,
     restart,
   } = useIntroSequence();
+
+  const hasTrackedPageView = useRef(false);
+
+  useEffect(() => {
+    if (!hasTrackedPageView.current) {
+      hasTrackedPageView.current = true;
+      const init = async () => {
+        await registerUTMSuperProperties();
+        track("landing_viewed", { not_ad: !hasUTMParams() });
+      };
+      init();
+    }
+  }, []);
 
   useEffect(() => {
     if (scene === "result") {
@@ -62,15 +77,15 @@ export default function Home() {
             key="result"
             sections={fortuneResult.sections}
             sajuData={fortuneResult.sajuData}
+            ghostClassification={fortuneResult.ghostClassification}
+            previewText={fortuneResult.previewText}
             readingId={fortuneResult.readingId}
+            resultPhase={resultPhase}
             onRestart={restart}
           />
         )}
       </AnimatePresence>
 
-      <AnimatePresence>
-        {scene === "intro" && <SkipButton key="skip" onClick={skip} />}
-      </AnimatePresence>
     </>
   );
 }

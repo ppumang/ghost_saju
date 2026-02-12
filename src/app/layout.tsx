@@ -1,5 +1,6 @@
 import type { Metadata, Viewport } from "next";
 import { Nanum_Myeongjo } from "next/font/google";
+import MixpanelInit from "@/components/MixpanelInit";
 import "./globals.css";
 
 const nanumMyeongjo = Nanum_Myeongjo({
@@ -46,6 +47,7 @@ export default function RootLayout({
         className={`${nanumMyeongjo.className} scene-locked`}
         style={{ fontFamily: "var(--font-primary)" }}
       >
+        <MixpanelInit />
         {children}
       </body>
     </html>
