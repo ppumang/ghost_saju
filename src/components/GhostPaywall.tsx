@@ -81,6 +81,7 @@ export default function GhostPaywall({
               lineHeight: 2,
               fontWeight: 700,
               letterSpacing: "0.05em",
+              wordBreak: "keep-all",
             }}
           >
             여기서부터는 함부로 볼 기 아이다.
@@ -92,6 +93,7 @@ export default function GhostPaywall({
               color: "#888",
               lineHeight: 1.8,
               marginTop: "0.5rem",
+              wordBreak: "keep-all",
             }}
           >
             니 곁에 붙어있는 것의 정체, 겉의 욕과 속의 욕,

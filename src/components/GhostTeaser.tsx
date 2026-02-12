@@ -37,6 +37,7 @@ export default function GhostTeaser({
           lineHeight: 2,
           letterSpacing: "0.03em",
           textShadow: "0 0 16px rgba(139, 0, 0, 0.4)",
+          wordBreak: "keep-all",
           marginBottom: "1rem",
         }}
       >
@@ -70,6 +71,7 @@ export default function GhostTeaser({
           lineHeight: 2,
           maxWidth: "360px",
           letterSpacing: "0.02em",
+          wordBreak: "keep-all",
         }}
       >
         {ghostClassification.affinityDescription}
@@ -89,6 +91,7 @@ export default function GhostTeaser({
             textAlign: "center",
             fontStyle: "italic",
             letterSpacing: "0.02em",
+            wordBreak: "keep-all",
           }}
         >
           {line}
