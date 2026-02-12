@@ -1,0 +1,230 @@
+// 천간 (Heavenly Stems)
+export type CheonGan = '갑' | '을' | '병' | '정' | '무' | '기' | '경' | '신' | '임' | '계';
+
+// 지지 (Earthly Branches)
+export type JiJi = '자' | '축' | '인' | '묘' | '진' | '사' | '오' | '미' | '신' | '유' | '술' | '해';
+
+// 오행 (Five Elements)
+export type OhHaeng = '목' | '화' | '토' | '금' | '수';
+
+// 음양
+export type EumYang = '양' | '음';
+
+// 십신 (Ten Gods)
+export type SipShin =
+  | '비견' | '겁재'
+  | '식신' | '상관'
+  | '편재' | '정재'
+  | '편관' | '정관'
+  | '편인' | '정인';
+
+// 십이운성 (Twelve Stages)
+export type SipIiUnSeong =
+  | '장생' | '목욕' | '관대' | '건록' | '제왕'
+  | '쇠' | '병' | '사' | '묘' | '절' | '태' | '양';
+
+// 간지 쌍
+export interface GanJi {
+  gan: CheonGan;
+  ji: JiJi;
+  ganOhHaeng: OhHaeng;
+  jiOhHaeng: OhHaeng;
+  ganEumYang: EumYang;
+  jiEumYang: EumYang;
+  raw: string; // 예: "갑자"
+}
+
+// 주 (하나의 기둥)
+export interface Ju {
+  ganJi: GanJi;
+  sipShinGan: string;       // 천간 십신
+  sipShinJi: string[];      // 지지 십신 (지장간별)
+  hideGan: string[];        // 지장간
+  diShi: string;            // 십이운성
+  naYin: string;            // 납음
+}
+
+// 사주 (네 기둥)
+export interface SaJu {
+  yearJu: Ju;
+  monthJu: Ju;
+  dayJu: Ju;
+  timeJu: Ju | null;  // null if 모름
+}
+
+// 오행 분포
+export interface OhHaengDistribution {
+  counts: {
+    목: number;
+    화: number;
+    토: number;
+    금: number;
+    수: number;
+  };
+  dominant: OhHaeng[];
+  weak: OhHaeng[];
+  missing: OhHaeng[];
+}
+
+// 신살
+export interface SinSal {
+  doHwa: boolean;     // 도화살
+  yeokMa: boolean;    // 역마살
+  hwaGae: boolean;    // 화개살
+  details: string[];  // 예: ["년지 도화살", "월지 역마살"]
+}
+
+// 대운 항목
+export interface DaeUnItem {
+  startAge: number;
+  endAge: number;
+  ganJi: string;
+  startYear: number;
+  endYear: number;
+}
+
+// 대운 정보
+export interface DaeUnInfo {
+  startAge: number;
+  isForward: boolean;  // 순행 여부
+  items: DaeUnItem[];
+}
+
+// 세운 항목
+export interface SeUnItem {
+  year: number;
+  age: number;
+  ganJi: string;
+}
+
+// 특수 궁위
+export interface SpecialPalaces {
+  taeWon: string;       // 태원
+  taeWonNaYin: string;
+  mingGong: string;     // 명궁
+  mingGongNaYin: string;
+  shenGong: string;     // 신궁
+  shenGongNaYin: string;
+}
+
+// 입력 데이터
+export interface BirthInput {
+  year: number;
+  month: number;
+  day: number;
+  hour: string;
+  calendarType: 'solar' | 'lunar';
+  isLeapMonth: boolean;
+  gender: 'male' | 'female';
+}
+
+// 최종 사주 데이터
+export interface SajuData {
+  input: BirthInput;
+  lunarDate: {
+    year: number;
+    month: number;
+    day: number;
+    isLeapMonth: boolean;
+    lunarDateStr: string;
+  };
+  saju: SaJu;
+  dayMaster: {
+    gan: CheonGan;
+    ohHaeng: OhHaeng;
+    eumYang: EumYang;
+    description: string;
+  };
+  ohHaeng: OhHaengDistribution;
+  sinSal: SinSal;
+  daeUn: DaeUnInfo;
+  seUn: SeUnItem[];
+  specialPalaces: SpecialPalaces;
+  zodiac: string;  // 띠
+  engineVersion: string;
+}
+
+// === 확장 분석 타입 (v2) ===
+
+// 사주 강약
+export interface StrengthResult {
+  strength: '태강' | '강' | '중화' | '약' | '태약';
+  score: number;       // 비겁+인성 비율 (0~100)
+  deukRyeong: boolean; // 득령 (월지 지지력)
+}
+
+// 용신/희신/기신
+export interface YongShinResult {
+  yongShin: OhHaeng;
+  huiShin: OhHaeng;
+  giShin: OhHaeng;
+}
+
+// 확장 신살 (기둥별)
+export interface ExpandedSinSal {
+  doHwa: boolean;
+  yeokMa: boolean;
+  hwaGae: boolean;
+  banAn: boolean;
+  yukHae: boolean;
+  hyeonChim: boolean;
+  gwiMunGwan: boolean;
+  jiSal: boolean;
+  details: string[];
+  byPillar: {
+    year: string[];
+    month: string[];
+    day: string[];
+    time: string[];
+  };
+}
+
+// 귀인 (시기별)
+export interface GuiinResult {
+  cheonUl: { present: boolean; positions: string[] };
+  taeGeuk: { present: boolean; positions: string[] };
+  wolDeok: { present: boolean; positions: string[] };
+  byPeriod: {
+    choNyeon: string[];   // 연주 = 초년
+    cheongNyeon: string[]; // 월주 = 청년
+    jungNyeon: string[];   // 일주 = 중년
+    malNyeon: string[];    // 시주 = 말년
+  };
+}
+
+// 합/충 관계
+export interface RelationshipItem {
+  type: '천간합' | '충' | '원진';
+  elements: string;
+  description: string;
+}
+
+export interface RelationshipResult {
+  hapList: RelationshipItem[];
+  chungList: RelationshipItem[];
+  wonjinList: RelationshipItem[];
+}
+
+// API 응답 섹션
+export interface FortuneSection {
+  id: string;
+  title: string;
+  content: string;
+  order: number;
+}
+
+// 최종 사주 데이터 (확장)
+export interface SajuDataV2 extends SajuData {
+  strength: StrengthResult;
+  yongShin: YongShinResult;
+  expandedSinSal: ExpandedSinSal;
+  guiin: GuiinResult;
+  relationships: RelationshipResult;
+}
+
+// API 응답
+export interface FortuneResponse {
+  sections: FortuneSection[];
+  sajuData: SajuData;
+  readingId: string | null;
+}
