@@ -249,6 +249,21 @@ export default function ResultScene({
         {/* ─── Phase: free (무료 영역) ─── */}
         {!isPaid && ghostClassification && ghostType && sajuData && (
           <>
+            {/* 할머니 이미지 */}
+            <img
+              src="/images/grandmother.jpg"
+              alt="귀신사주 할머니"
+              style={{
+                width: "clamp(120px, 40vw, 200px)",
+                height: "auto",
+                borderRadius: "50%",
+                opacity: 0.85,
+                filter: "grayscale(30%)",
+                boxShadow: "0 0 30px rgba(139, 0, 0, 0.3)",
+                marginBottom: "1rem",
+              }}
+            />
+
             {/* 1. 짧은 감지 코멘트 */}
             <GhostDetection
               ghostClassification={ghostClassification}
