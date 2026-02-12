@@ -12,6 +12,7 @@ import OhHaengChart from "./OhHaengChart";
 import DaeUnTimeline from "./DaeUnTimeline";
 import GhostDetection from "./GhostDetection";
 import GhostPreview from "./GhostPreview";
+import GhostTeaser from "./GhostTeaser";
 import GhostPaywall from "./GhostPaywall";
 import GhostReveal from "./GhostReveal";
 import type { ResultPhase } from "@/hooks/useIntroSequence";
@@ -68,6 +69,7 @@ export default function ResultScene({
   const [submitted, setSubmitted] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [chartOpen, setChartOpen] = useState(false);
+  const [detectionDone, setDetectionDone] = useState(false);
   const [activeSection, setActiveSection] = useState(sections[0]?.id || "");
   const [ghostType, setGhostType] = useState<GhostTypeDef | undefined>(ghostTypeProp);
   const sectionRefs = useRef<Record<string, HTMLElement | null>>({});
@@ -247,21 +249,33 @@ export default function ResultScene({
         {/* ─── Phase: free (무료 영역) ─── */}
         {!isPaid && ghostClassification && ghostType && sajuData && (
           <>
-            {/* 귀신 감지 */}
+            {/* 1. 짧은 감지 코멘트 */}
             <GhostDetection
               ghostClassification={ghostClassification}
-              ghostType={ghostType}
+              onComplete={() => setDetectionDone(true)}
             />
 
-            {/* AI 프리뷰 맛보기 */}
-            {previewText && <GhostPreview previewText={previewText} />}
+            {/* 2. AI 프리뷰 맛보기 */}
+            {detectionDone && previewText && (
+              <GhostPreview previewText={previewText} />
+            )}
 
-            {/* 페이월 */}
-            <GhostPaywall
-              ghostType={ghostType}
-              sajuData={sajuData}
-              ghostClassification={ghostClassification}
-            />
+            {/* 3. 귀신 특징 (블러 한자 + 티저) */}
+            {detectionDone && (
+              <GhostTeaser
+                ghostClassification={ghostClassification}
+                ghostType={ghostType}
+              />
+            )}
+
+            {/* 4. 페이월 */}
+            {detectionDone && (
+              <GhostPaywall
+                ghostType={ghostType}
+                sajuData={sajuData}
+                ghostClassification={ghostClassification}
+              />
+            )}
           </>
         )}
 
@@ -334,12 +348,8 @@ export default function ResultScene({
           </>
         )}
 
-        {/* 리스타트 / CTA */}
-        {!isStaticPage ? (
-          <button className={styles.restartButton} onClick={onRestart}>
-            다시 보기
-          </button>
-        ) : (
+        {/* 정적 페이지에서만 CTA */}
+        {isStaticPage && (
           <a
             href="/"
             className={styles.restartButton}

@@ -3,19 +3,20 @@
 import { useState, useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { track } from "@/lib/mixpanel";
-import type { GhostClassification, GhostTypeDef } from "@/lib/saju/types";
+import type { GhostClassification } from "@/lib/saju/types";
 
 interface GhostDetectionProps {
   ghostClassification: GhostClassification;
-  ghostType: GhostTypeDef;
+  onComplete?: () => void;
 }
 
 export default function GhostDetection({
   ghostClassification,
-  ghostType,
+  onComplete,
 }: GhostDetectionProps) {
   const [visibleLines, setVisibleLines] = useState(0);
   const hasTracked = useRef(false);
+  const hasCalledComplete = useRef(false);
 
   useEffect(() => {
     if (!hasTracked.current) {
@@ -35,6 +36,16 @@ export default function GhostDetection({
     return () => clearInterval(timer);
   }, [ghostClassification.detectionLines]);
 
+  useEffect(() => {
+    if (
+      visibleLines >= ghostClassification.detectionLines.length &&
+      !hasCalledComplete.current
+    ) {
+      hasCalledComplete.current = true;
+      onComplete?.();
+    }
+  }, [visibleLines, ghostClassification.detectionLines.length, onComplete]);
+
   return (
     <div
       style={{
@@ -46,7 +57,6 @@ export default function GhostDetection({
         gap: "1.5rem",
       }}
     >
-      {/* 감지 대사 (하나씩 등장) — 큰 폰트, 음산한 느낌 */}
       <AnimatePresence>
         {ghostClassification.detectionLines
           .slice(0, visibleLines)
@@ -77,78 +87,6 @@ export default function GhostDetection({
             </motion.p>
           ))}
       </AnimatePresence>
-
-      {/* 블러 처리된 귀신 한자 (티저) */}
-      {visibleLines >= ghostClassification.detectionLines.length && (
-        <motion.div
-          initial={{ opacity: 0, scale: 0.95 }}
-          animate={{ opacity: 1, scale: 1 }}
-          transition={{ delay: 0.3, duration: 1.5, ease: "easeOut" }}
-          style={{
-            marginTop: "2rem",
-            display: "flex",
-            flexDirection: "column",
-            alignItems: "center",
-            gap: "1rem",
-          }}
-        >
-          <p
-            style={{
-              fontSize: "clamp(3.5rem, 12vw, 5rem)",
-              color: "#8b0000",
-              fontWeight: "bold",
-              letterSpacing: "0.3em",
-              filter: "blur(7px)",
-              textShadow: "0 0 40px rgba(139, 0, 0, 0.6), 0 0 80px rgba(139, 0, 0, 0.2)",
-              userSelect: "none",
-              animation: "ghostPulse 3s ease-in-out infinite",
-            }}
-          >
-            {ghostType.hanja}
-          </p>
-
-          <p
-            style={{
-              fontFamily: "var(--font-primary)",
-              fontSize: "clamp(0.95rem, 2.5vw, 1.1rem)",
-              color: "#888",
-              textAlign: "center",
-              lineHeight: 2,
-              maxWidth: "360px",
-              letterSpacing: "0.02em",
-            }}
-          >
-            {ghostClassification.affinityDescription}
-          </p>
-
-          {/* 티저 라인 */}
-          {ghostType.teaserLines.map((line, i) => (
-            <motion.p
-              key={`teaser-${i}`}
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              transition={{ delay: 1 + i * 0.5, duration: 0.8 }}
-              style={{
-                fontFamily: "var(--font-primary)",
-                fontSize: "clamp(1rem, 2.5vw, 1.1rem)",
-                color: "#999",
-                textAlign: "center",
-                fontStyle: "italic",
-                letterSpacing: "0.02em",
-              }}
-            >
-              {line}
-            </motion.p>
-          ))}
-        </motion.div>
-      )}
-
-      <style>{`
-        @keyframes ghostPulse {
-          0%, 100% { opacity: 0.7; filter: blur(7px); }
-          50% { opacity: 1; filter: blur(5px); }
-        }
-      `}</style>
     </div>
   );
 }
