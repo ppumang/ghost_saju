@@ -10,7 +10,6 @@ import {
 } from './constants';
 import { resolveTime } from './time-resolver';
 import { analyzeOhHaeng } from './ohaeng-analyzer';
-import { analyzeSinSal } from './sinsal';
 import { analyzeStrength, determineYongShin } from './strength-analyzer';
 import { analyzeExpandedSinSal } from './sinsal-expanded';
 import { analyzeGuiin } from './guiin-analyzer';
@@ -183,8 +182,14 @@ export function calculateSaju(input: BirthInput): SajuData {
   // 8. 오행 분석
   const ohHaeng = analyzeOhHaeng(saju);
 
-  // 9. 신살 분석
-  const sinSal = analyzeSinSal(saju);
+  // 9. 신살 분석 (확장 신살에서 레거시 필드 파생)
+  const expandedSinSalResult = analyzeExpandedSinSal(saju);
+  const sinSal = {
+    doHwa: expandedSinSalResult.doHwa,
+    yeokMa: expandedSinSalResult.yeokMa,
+    hwaGae: expandedSinSalResult.hwaGae,
+    details: expandedSinSalResult.details,
+  };
 
   // 10. 대운 계산
   const genderCode = input.gender === 'male' ? 1 : 0;
@@ -261,8 +266,8 @@ export function calculateSaju(input: BirthInput): SajuData {
   // 16. 용신/희신/기신
   const yongShin = determineYongShin(dayGanJi.ganOhHaeng, strength.strength);
 
-  // 17. 확장 신살 (8종 + 기둥별)
-  const expandedSinSal = analyzeExpandedSinSal(saju);
+  // 17. 확장 신살 (8종 + 기둥별) — step 9에서 이미 계산
+  const expandedSinSal = expandedSinSalResult;
 
   // 18. 귀인 분석 (3종 + 시기별)
   const guiin = analyzeGuiin(saju);
