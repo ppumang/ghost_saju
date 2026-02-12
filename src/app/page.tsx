@@ -37,6 +37,18 @@ export default function Home() {
     }
   }, []);
 
+  // 모든 씬 전환을 통일된 이벤트로 트래킹 (퍼널 분석용)
+  const prevSceneRef = useRef<string | null>(null);
+  useEffect(() => {
+    if (prevSceneRef.current !== null) {
+      track("scene_changed", {
+        from: prevSceneRef.current,
+        to: scene,
+      });
+    }
+    prevSceneRef.current = scene;
+  }, [scene]);
+
   useEffect(() => {
     if (scene === "result") {
       document.body.style.background = "#0a0a0a";
