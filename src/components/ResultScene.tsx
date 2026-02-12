@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect, useRef, useCallback } from "react";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 import { track } from "@/lib/mixpanel";
 import { notifySlack } from "@/lib/slack";
 import styles from "./ResultScene.module.css";
@@ -67,6 +67,7 @@ export default function ResultScene({
   const [review, setReview] = useState("");
   const [submitted, setSubmitted] = useState(false);
   const [submitting, setSubmitting] = useState(false);
+  const [chartOpen, setChartOpen] = useState(false);
   const [activeSection, setActiveSection] = useState(sections[0]?.id || "");
   const [ghostType, setGhostType] = useState<GhostTypeDef | undefined>(ghostTypeProp);
   const sectionRefs = useRef<Record<string, HTMLElement | null>>({});
@@ -203,28 +204,42 @@ export default function ResultScene({
         <h1 className={styles.title}>귀신사주</h1>
         <div className={styles.titleDivider} />
 
-        {/* 사주 데이터 시각화 (항상 표시) */}
+        {/* 사주 데이터 — 토글로 접기/펼치기 */}
         {sajuData && (
           <>
-            <div className={styles.birthSummary}>
-              <span>
+            <button
+              className={styles.chartToggle}
+              onClick={() => setChartOpen((v) => !v)}
+            >
+              <span className={styles.chartToggleLabel}>
                 {sajuData.input.year}년 {sajuData.input.month}월{' '}
                 {sajuData.input.day}일
-              </span>
-              <span className={styles.birthDot}>·</span>
-              <span>
+                <span className={styles.birthDot}>·</span>
                 {sajuData.input.calendarType === 'solar' ? '양력' : '음력'}
-              </span>
-              <span className={styles.birthDot}>·</span>
-              <span>
+                <span className={styles.birthDot}>·</span>
                 {sajuData.input.gender === 'male' ? '남' : '여'}성
+                <span className={styles.birthDot}>·</span>
+                {sajuData.zodiac}띠
               </span>
-              <span className={styles.birthDot}>·</span>
-              <span>{sajuData.zodiac}띠</span>
-            </div>
-            <SajuChart sajuData={sajuData} />
-            <OhHaengChart sajuData={sajuData} />
-            <DaeUnTimeline sajuData={sajuData} />
+              <span className={`${styles.chartToggleArrow} ${chartOpen ? styles.chartToggleArrowOpen : ''}`}>
+                ▾
+              </span>
+            </button>
+            <AnimatePresence>
+              {chartOpen && (
+                <motion.div
+                  initial={{ height: 0, opacity: 0 }}
+                  animate={{ height: "auto", opacity: 1 }}
+                  exit={{ height: 0, opacity: 0 }}
+                  transition={{ duration: 0.4, ease: "easeInOut" }}
+                  style={{ overflow: "hidden", width: "100%" }}
+                >
+                  <SajuChart sajuData={sajuData} />
+                  <OhHaengChart sajuData={sajuData} />
+                  <DaeUnTimeline sajuData={sajuData} />
+                </motion.div>
+              )}
+            </AnimatePresence>
             <div className={styles.dataDivider} />
           </>
         )}

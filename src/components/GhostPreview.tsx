@@ -12,7 +12,7 @@ function renderBold(text: string) {
   const parts = text.split(/\*\*(.+?)\*\*/g);
   return parts.map((part, i) =>
     i % 2 === 1 ? (
-      <strong key={i} style={{ color: "#d4c5a9", fontWeight: 700 }}>
+      <strong key={i} style={{ color: "#8b0000", fontWeight: 800, textShadow: "0 0 6px rgba(139, 0, 0, 0.3)" }}>
         {part}
       </strong>
     ) : (
@@ -56,38 +56,40 @@ export default function GhostPreview({ previewText }: GhostPreviewProps) {
       transition={{ duration: 0.8 }}
       style={{
         width: "100%",
-        padding: "2rem 0",
+        padding: "2.5rem 0",
         display: "flex",
         flexDirection: "column",
-        gap: "1.2rem",
+        gap: "1.5rem",
       }}
     >
       {/* 구분선 */}
       <div
         style={{
-          width: "60px",
+          width: "80px",
           height: "1px",
           background:
             "linear-gradient(90deg, transparent, #8b0000, transparent)",
-          margin: "0 auto 1rem",
+          margin: "0 auto 1.5rem",
+          boxShadow: "0 0 12px rgba(139, 0, 0, 0.3)",
         }}
       />
 
-      {/* 단락별 페이드인 */}
+      {/* 단락별 페이드인 — 큰 폰트 */}
       <AnimatePresence>
         {paragraphs.slice(0, visibleCount).map((paragraph, i) => (
           <motion.p
             key={i}
-            initial={{ opacity: 0, y: 12 }}
+            initial={{ opacity: 0, y: 16 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8, ease: "easeOut" }}
+            transition={{ duration: 1, ease: "easeOut" }}
             style={{
               fontFamily: "var(--font-primary)",
-              fontSize: "clamp(0.9rem, 2.5vw, 1rem)",
-              color: i === paragraphs.length - 1 ? "#888" : "#c4b896",
-              lineHeight: 2.2,
+              fontSize: "clamp(1.05rem, 3vw, 1.25rem)",
+              color: i === paragraphs.length - 1 ? "#777" : "#c4b896",
+              lineHeight: 2.4,
               wordBreak: "keep-all",
               textAlign: "left",
+              letterSpacing: "0.02em",
             }}
           >
             {renderBold(paragraph)}
@@ -104,25 +106,26 @@ export default function GhostPreview({ previewText }: GhostPreviewProps) {
           style={{
             display: "flex",
             justifyContent: "center",
-            gap: "0.5rem",
-            padding: "0.5rem 0",
+            gap: "0.6rem",
+            padding: "1rem 0",
           }}
         >
           {[0, 1, 2].map((dot) => (
             <motion.span
               key={dot}
-              animate={{ opacity: [0.2, 0.8, 0.2] }}
+              animate={{ opacity: [0.2, 0.9, 0.2] }}
               transition={{
-                duration: 2,
+                duration: 2.5,
                 repeat: Infinity,
-                delay: dot * 0.3,
+                delay: dot * 0.4,
                 ease: "easeInOut",
               }}
               style={{
-                width: "4px",
-                height: "4px",
+                width: "5px",
+                height: "5px",
                 borderRadius: "50%",
                 background: "#8b0000",
+                boxShadow: "0 0 8px rgba(139, 0, 0, 0.5)",
               }}
             />
           ))}
