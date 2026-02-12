@@ -250,3 +250,12 @@ export const CHUNGAN_HAP: [CheonGan, CheonGan, OhHaeng][] = [
   ['정', '임', '목'],  // 정임합목
   ['무', '계', '화'],  // 무계합화
 ];
+
+// 오행 컬러맵 (다크테마용)
+export const OHAENG_COLORS: Record<OhHaeng, { bg: string; text: string }> = {
+  '목': { bg: '#1a3d1a', text: '#6bcf6b' },
+  '화': { bg: '#3d1a1a', text: '#cf6b6b' },
+  '토': { bg: '#3d351a', text: '#cfb86b' },
+  '금': { bg: '#2a2a2a', text: '#d0d0d0' },
+  '수': { bg: '#1a1a3d', text: '#6b8fcf' },
+};

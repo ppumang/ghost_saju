@@ -1,0 +1,107 @@
+.wrapper {
+  width: 100%;
+  margin-bottom: 2rem;
+}
+
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.8rem;
+  margin-bottom: 1rem;
+}
+
+.chartTitle {
+  font-family: var(--font-primary);
+  font-size: clamp(1rem, 2.5vw, 1.2rem);
+  font-weight: 700;
+  color: #d4c5a9;
+  letter-spacing: 0.1em;
+}
+
+.direction {
+  font-family: var(--font-primary);
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: #8b0000;
+  background: rgba(139, 0, 0, 0.1);
+  border: 1px solid rgba(139, 0, 0, 0.25);
+  padding: 0.15rem 0.5rem;
+  border-radius: 3px;
+}
+
+.timeline {
+  display: flex;
+  gap: 0.4rem;
+  overflow-x: auto;
+  padding: 0.5rem 0.25rem 0.75rem;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+
+.timeline::-webkit-scrollbar {
+  display: none;
+}
+
+.item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.3rem;
+  flex-shrink: 0;
+  min-width: 4rem;
+}
+
+.itemCurrent {
+  position: relative;
+}
+
+.ageRange {
+  font-family: var(--font-primary);
+  font-size: 0.6rem;
+  font-weight: 500;
+  color: #666;
+  white-space: nowrap;
+}
+
+.itemCurrent .ageRange {
+  color: #d4c5a9;
+  font-weight: 700;
+}
+
+.ganJiBox {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 3rem;
+  height: 3rem;
+  border: 1px solid;
+  border-radius: 4px;
+  transition: all 0.3s ease;
+}
+
+.itemCurrent .ganJiBox {
+  box-shadow: 0 0 12px rgba(212, 197, 169, 0.25);
+}
+
+.ganJi {
+  font-family: var(--font-primary);
+  font-size: 1rem;
+  font-weight: 800;
+}
+
+.yearRange {
+  font-family: var(--font-primary);
+  font-size: 0.55rem;
+  font-weight: 400;
+  color: #555;
+  white-space: nowrap;
+}
+
+.currentLabel {
+  font-family: var(--font-primary);
+  font-size: 0.6rem;
+  font-weight: 700;
+  color: #8b0000;
+  letter-spacing: 0.05em;
+}
