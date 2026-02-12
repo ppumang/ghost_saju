@@ -1,6 +1,6 @@
 'use client';
 
-import { useSearchParams } from 'next/navigation';
+import { useSearchParams, useRouter } from 'next/navigation';
 import { useEffect, useState, useRef, Suspense } from 'react';
 import { track } from '@/lib/mixpanel';
 import { notifySlack } from '@/lib/slack';
@@ -15,9 +15,9 @@ function SuccessContent() {
   const amount = searchParams.get('amount');
   const purchaseId = searchParams.get('purchaseId');
 
+  const router = useRouter();
   const [stage, setStage] = useState<Stage>('confirming');
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
-  const [sentEmail, setSentEmail] = useState<string | null>(null);
   const processedRef = useRef(false);
 
   useEffect(() => {
@@ -68,8 +68,6 @@ function SuccessContent() {
         const { sajuData, ghostClassification } = purchase.payload ?? {};
         const email = purchase.email;
 
-        setSentEmail(email);
-
         // 이벤트: 결제 완료
         track('payment_completed', { email, purchaseId });
         notifySlack(`✅ [결제 완료] ${email} / 주문: ${orderId}`);
@@ -89,8 +87,6 @@ function SuccessContent() {
             console.error('Email status:', emailStatus);
           }
 
-          setStage('complete');
-
           // Step 4: AI 생성 (fire-and-forget, readingId로 기존 레코드 업데이트)
           if (readingId) {
             fetch('/api/fortune', {
@@ -98,10 +94,14 @@ function SuccessContent() {
               headers: { 'Content-Type': 'application/json' },
               body: JSON.stringify({ sajuData, ghostClassification, readingId }),
             }).catch(console.error);
+
+            // 결과 페이지로 즉시 이동 (폴링으로 AI 완료 대기)
+            router.replace(`/result/${readingId}`);
+            return;
           }
-        } else {
-          setStage('complete');
         }
+
+        setStage('complete');
       } catch (err) {
         setStage('error');
         setErrorMessage(
@@ -141,40 +141,14 @@ function SuccessContent() {
           </>
         )}
 
-        {/* Stage: 완료 */}
+        {/* Stage: 완료 (readingId 없는 예외 케이스) */}
         {stage === 'complete' && (
           <>
-            <p
-              style={{
-                fontSize: '2rem',
-                marginBottom: '0.5rem',
-              }}
-            >
-              &#x2709;&#xFE0F;
-            </p>
-            <p style={headingStyle}>이메일로 전송되었습니다</p>
-            {sentEmail && (
-              <p
-                style={{
-                  fontFamily: 'var(--font-primary)',
-                  fontSize: '0.95rem',
-                  color: '#d4c5a9',
-                  fontWeight: 700,
-                  letterSpacing: '0.02em',
-                  wordBreak: 'break-all',
-                }}
-              >
-                {sentEmail}
-              </p>
-            )}
+            <p style={headingStyle}>결제가 완료되었습니다</p>
             <p style={subStyle}>
-              위 이메일로 사주 풀이 결과 링크를 보내드렸습니다.
+              이메일로 결과 링크를 보내드렸습니다.
               <br />
               메일함을 확인해주세요.
-              <br />
-              <span style={{ color: '#666', fontSize: '0.75rem' }}>
-                메일이 보이지 않으면 스팸함을 확인해주세요.
-              </span>
             </p>
             <a href="/" style={linkButtonStyle}>
               홈으로

@@ -23,33 +23,33 @@ export function classifyGhost(sajuData: SajuDataV2): GhostClassification {
   let typeId: GhostTypeId;
   let matchReason: string;
 
-  // ── Phase 1: 귀문관살 → 鬼門 ──────────────
-  if (sinSal.gwiMunGwan) {
+  // ── Phase 1: 강한 신살 조합 (희귀 조건만) ──────────────
+  if (sinSal.gwiMunGwan && (sinSal.hwaGae || counts.insung >= 3)) {
+    // 귀문관살 + 화개살 또는 인성 과다 → 확실한 鬼門
     typeId = 'gwiMun';
-    matchReason = '귀문관살이 사주에 있다. 귀신의 문이 열려있는 사주.';
+    matchReason = '귀문관살에 영적 감수성이 겹쳤다. 귀신의 문이 열려있는 사주.';
   }
-  // ── Phase 2: 도화살 + 수 과다 → 溺鬼 ──────
   else if (sinSal.doHwa && ohHaeng.counts['수'] >= 3) {
     typeId = 'ikGwi';
     matchReason = '도화살에 수 기운이 넘친다. 감정에 빠지면 헤어나오지 못하는 사주.';
   }
-  // ── Phase 3: 일간 + 강약 + 십신 분포 ────────
+  // ── Phase 2: 십신 + 오행 + 강약 ────────
   else {
-    const result = classifyByPhase3(dayOhHaeng, strength, counts, ohHaeng, sinSal);
+    const result = classifyByPhase2(dayOhHaeng, strength, counts, ohHaeng, sinSal);
     typeId = result.typeId;
     matchReason = result.reason;
   }
 
-  // Phase 3에서 못 잡으면 Phase 4로
+  // Phase 2에서 못 잡으면 Phase 3로
   if (!typeId) {
-    const result = classifyByPhase4(sinSal, relationships, counts);
+    const result = classifyByPhase3(sinSal, relationships, counts, ohHaeng, sajuData.strength);
     typeId = result.typeId;
     matchReason = result.reason;
   }
 
-  // Phase 5: 오행 디폴트
+  // Phase 4: 오행 + 강약 디폴트
   if (!typeId) {
-    const result = classifyByPhase5(dayOhHaeng);
+    const result = classifyByPhase4(dayOhHaeng, strength, ohHaeng);
     typeId = result.typeId;
     matchReason = result.reason;
   }
@@ -104,9 +104,9 @@ function countSipShinCategories(sajuData: SajuDataV2): SipShinCounts {
   return counts;
 }
 
-// ─── Phase 3: 일간 + 강약 + 십신 분포 ────────────
+// ─── Phase 2: 십신 + 오행 + 강약 (핵심 분류) ────────────
 
-function classifyByPhase3(
+function classifyByPhase2(
   dayOhHaeng: string,
   strength: string,
   counts: SipShinCounts,
@@ -114,29 +114,44 @@ function classifyByPhase3(
   sinSal: SajuDataV2['expandedSinSal'],
 ): { typeId: GhostTypeId; reason: string } {
 
-  // 화 과다 + 식상 과다 → 狂燐
-  if (ohHaeng.counts['화'] >= 3 && counts.siksang >= 3) {
+  // 화 과다 + 식상 → 狂燐
+  if (ohHaeng.counts['화'] >= 3 && counts.siksang >= 2) {
     return { typeId: 'gwangIn', reason: '화 기운과 식상이 넘친다. 불꽃처럼 타오르다 스스로를 태우는 사주.' };
   }
 
-  // 식상 과다 → 蝕魅
+  // 역마살 + 추가 조건 → 黃泉客
+  if (sinSal.yeokMa && (strength === '약' || strength === '태약' || ohHaeng.missing.length > 0)) {
+    return { typeId: 'hwangCheonGaek', reason: '역마살이 있다. 한 곳에 머물지 못하는 떠돌이 사주.' };
+  }
+
+  // 토 과다(4+) + 강 → 蟄龍 (토 속 잠든 용)
+  if (ohHaeng.counts['토'] >= 4 && (strength === '강' || strength === '태강')) {
+    return { typeId: 'chipRyong', reason: '토 기운이 두텁고 사주가 강하다. 깊이 잠든 용.' };
+  }
+
+  // 토 과다(4+) + 약 → 繭靈
+  if (ohHaeng.counts['토'] >= 4) {
+    return { typeId: 'gyeonRyeong', reason: '토 기운이 두텁다. 스스로를 가두고 있는 사주.' };
+  }
+
+  // 식상 과다(4+) → 蝕魅
   if (counts.siksang >= 4) {
     return { typeId: 'sikMae', reason: '식상이 넘쳐난다. 채워도 채워도 배고픈 사주.' };
   }
 
   // 관성 과다 + 강 이상 → 冥判
-  if (counts.gwansung >= 3 && (strength === '강' || strength === '태강')) {
+  if (counts.gwansung >= 2 && (strength === '강' || strength === '태강')) {
     return { typeId: 'myeongPan', reason: '관성이 강하고 사주도 강하다. 심판하고 통제하려는 기운.' };
   }
 
-  // 재성 과다 → 渴魂
+  // 재성 과다(4+) → 渴魂
   if (counts.jaesung >= 4) {
     return { typeId: 'galHon', reason: '재성이 넘친다. 아무리 채워도 갈증이 나는 사주.' };
   }
 
-  // 인성 과다 + 약 이하 → 夜燭鬼
-  if (counts.insung >= 3 && (strength === '약' || strength === '태약')) {
-    return { typeId: 'yaChokGwi', reason: '인성이 많고 사주가 약하다. 어둠 속에서 촛불 하나 들고 헤매는 사주.' };
+  // 인성 과다 → 夜燭鬼
+  if (counts.insung >= 3) {
+    return { typeId: 'yaChokGwi', reason: '인성이 많다. 어둠 속에서 촛불 하나 들고 헤매는 사주.' };
   }
 
   // 비겁 없음 + 약 → 無面鬼
@@ -144,56 +159,98 @@ function classifyByPhase3(
     return { typeId: 'muMyeonGwi', reason: '비겁이 없고 사주가 약하다. 자기 얼굴을 잃어버린 사주.' };
   }
 
-  // 토 과다 + 인성 많음 → 繭靈
-  if (ohHaeng.counts['토'] >= 3 && counts.insung >= 2) {
-    return { typeId: 'gyeonRyeong', reason: '토 기운이 두텁고 인성이 많다. 스스로를 가두고 있는 사주.' };
+  // 태강 OR 비겁 >= 3 → 不可殺
+  if (strength === '태강' || counts.bigyeop >= 3) {
+    return { typeId: 'bulGaSal', reason: '사주가 태강하다. 쓰러져도 다시 일어서는 사주.' };
   }
 
-  // 화 과다 + 강 이상 → 狂燐
-  if (ohHaeng.counts['화'] >= 3 && (strength === '강' || strength === '태강')) {
-    return { typeId: 'gwangIn', reason: '화 기운이 넘치고 강한 사주. 통제 불능의 불꽃.' };
+  // 태약 → 滯魄
+  if (strength === '태약') {
+    return { typeId: 'cheBaek', reason: '사주가 태약하다. 떠나지 못하고 맴도는 넋.' };
   }
 
-  // 재성 과다 + 관성 과다 → 執魅
-  if (counts.jaesung >= 3 && counts.gwansung >= 2) {
+  // 식상 3 + 강 → 蝕魅 (식상이 많고 강하면)
+  if (counts.siksang >= 3 && (strength === '강' || strength === '태강')) {
+    return { typeId: 'sikMae', reason: '식상이 넘쳐난다. 강한 사주가 쏟아내기만 하는 격.' };
+  }
+
+  // 식상 3 + 약 → 滯魄 (식상이 많은데 약하면 → 에너지가 빠져나가는)
+  if (counts.siksang >= 3 && (strength === '약' || strength === '태약')) {
+    return { typeId: 'cheBaek', reason: '식상이 많은데 사주가 약하다. 기운이 새어나가는 사주.' };
+  }
+
+  // 재성 3 + 강 → 蟄龍 (재성이 있고 강하면 잠든 용)
+  if (counts.jaesung >= 3 && (strength === '강' || strength === '태강')) {
+    return { typeId: 'chipRyong', reason: '재성이 넘치고 사주가 강하다. 잠든 용, 아직 때를 기다리는 사주.' };
+  }
+
+  // 재성 3 + 약 → 渴魂
+  if (counts.jaesung >= 3 && (strength === '약' || strength === '태약')) {
+    return { typeId: 'galHon', reason: '재성이 넘치는데 사주가 약하다. 손에 잡히지 않는 갈증.' };
+  }
+
+  // 재성 + 관성 엉킴 → 執魅
+  if (counts.jaesung >= 2 && counts.gwansung >= 2) {
     return { typeId: 'jipMae', reason: '재성과 관성이 엉켜있다. 놓지 못하는 집착의 사주.' };
   }
 
-  // 도화살 단독 → 溺鬼
-  if (sinSal.doHwa && counts.jaesung >= 2) {
-    return { typeId: 'ikGwi', reason: '도화살에 재성이 따른다. 사람에게 빠지면 헤어나오지 못하는 사주.' };
+  // 도화살 → 溺鬼
+  if (sinSal.doHwa) {
+    return { typeId: 'ikGwi', reason: '도화살이 있다. 사람에게 빠지면 헤어나오지 못하는 사주.' };
   }
 
-  // 태강 + 식상 많음 → 不可殺
-  if (strength === '태강' && counts.siksang >= 2) {
-    return { typeId: 'bulGaSal', reason: '사주가 태강하고 식상이 있다. 쓰러져도 다시 일어서는 사주.' };
+  // 식상 3 (분류 안 된 나머지) → 蝕魅
+  if (counts.siksang >= 3) {
+    return { typeId: 'sikMae', reason: '식상이 넘쳐난다. 채워도 채워도 배고픈 사주.' };
   }
 
-  // 일간 수 + 약 → 滯魄
-  if (dayOhHaeng === '수' && (strength === '약' || strength === '태약')) {
-    return { typeId: 'cheBaek', reason: '수 일간에 약한 사주. 떠나지 못하고 맴도는 넋.' };
+  // 재성 3 (분류 안 된 나머지) → 渴魂
+  if (counts.jaesung >= 3) {
+    return { typeId: 'galHon', reason: '재성이 넘친다. 아무리 채워도 갈증이 나는 사주.' };
   }
 
-  // @ts-expect-error - fallthrough to Phase 4
+  // 토 과다(3+) + 강 → 蟄龍 (토 속에 잠든 용)
+  if (ohHaeng.counts['토'] >= 3 && (strength === '강' || strength === '태강')) {
+    return { typeId: 'chipRyong', reason: '토 기운 속에 강한 사주. 땅속에 잠든 용의 형상.' };
+  }
+
+  // 토 과다(3+) + 약 → 繭靈 (토에 갇힌 영혼)
+  if (ohHaeng.counts['토'] >= 3) {
+    return { typeId: 'gyeonRyeong', reason: '토 기운이 두텁다. 스스로를 가두고 있는 사주.' };
+  }
+
+  // 역마살 단독 → 黃泉客
+  if (sinSal.yeokMa) {
+    return { typeId: 'hwangCheonGaek', reason: '역마살이 있다. 떠돌이 기운이 있는 사주.' };
+  }
+
+  // 화 과다 → 狂燐
+  if (ohHaeng.counts['화'] >= 3) {
+    return { typeId: 'gwangIn', reason: '화 기운이 넘치는 사주. 통제 불능의 불꽃.' };
+  }
+
+  // @ts-expect-error - fallthrough to Phase 3
   return { typeId: null as GhostTypeId, reason: '' };
 }
 
-// ─── Phase 4: 복합 폴백 ─────────────────────
+// ─── Phase 3: 신살 + 관계 기반 ─────────────────────
 
-function classifyByPhase4(
+function classifyByPhase3(
   sinSal: SajuDataV2['expandedSinSal'],
   relationships: SajuDataV2['relationships'],
   counts: SipShinCounts,
+  ohHaeng: SajuDataV2['ohHaeng'],
+  strength: SajuDataV2['strength'],
 ): { typeId: GhostTypeId; reason: string } {
 
-  // 역마살 → 黃泉客
-  if (sinSal.yeokMa) {
-    return { typeId: 'hwangCheonGaek', reason: '역마살이 있다. 한 곳에 머물지 못하는 떠돌이 사주.' };
+  // 충 있음 → 黃泉客
+  if (relationships.chungList.length >= 1) {
+    return { typeId: 'hwangCheonGaek', reason: '충이 있다. 안정을 찾지 못하고 흔들리는 사주.' };
   }
 
-  // 충 2개 이상 → 黃泉客
-  if (relationships.chungList.length >= 2) {
-    return { typeId: 'hwangCheonGaek', reason: '충이 많다. 안정을 찾지 못하고 떠도는 사주.' };
+  // 귀문관살 단독 → 鬼門 (Phase 1에서 못 잡힌 단독 귀문관살)
+  if (sinSal.gwiMunGwan) {
+    return { typeId: 'gwiMun', reason: '귀문관살이 있다. 경계가 열려있는 사주.' };
   }
 
   // 화개살 → 鬼門
@@ -201,37 +258,69 @@ function classifyByPhase4(
     return { typeId: 'gwiMun', reason: '화개살이 있다. 영적 감수성이 열려있는 사주.' };
   }
 
-  // 원진 있으면 → 滯魄
+  // 원진 → 滯魄
   if (relationships.wonjinList.length > 0) {
     return { typeId: 'cheBaek', reason: '원진이 있다. 가까운 인연과 어긋나며 맴도는 넋.' };
   }
 
-  // 관성 과다 → 冥判
-  if (counts.gwansung >= 3) {
-    return { typeId: 'myeongPan', reason: '관성이 강하다. 모든 것을 재고 따지는 심판관의 사주.' };
+  // 합 많음 → 執魅
+  if (relationships.hapList.length >= 2) {
+    return { typeId: 'jipMae', reason: '합이 많다. 한 번 잡으면 놓지 못하는 사주.' };
   }
 
-  // 비겁 과다 → 不可殺
-  if (counts.bigyeop >= 3) {
+  // 강 + 재성 → 蟄龍
+  if (strength.strength === '강' && counts.jaesung >= 1) {
+    return { typeId: 'chipRyong', reason: '사주가 강하고 재성이 있다. 잠든 용, 아직 때를 기다리는 사주.' };
+  }
+
+  // 비겁 많음 → 不可殺
+  if (counts.bigyeop >= 2) {
     return { typeId: 'bulGaSal', reason: '비겁이 강하다. 쓰러져도 다시 일어서는 사주.' };
   }
 
-  // @ts-expect-error - fallthrough to Phase 5
+  // 관성 많음 → 冥判
+  if (counts.gwansung >= 2) {
+    return { typeId: 'myeongPan', reason: '관성이 있다. 재고 따지는 심판관의 기운.' };
+  }
+
+  // 식상 있고 약 → 蝕魅
+  if (counts.siksang >= 2 && strength.strength === '약') {
+    return { typeId: 'sikMae', reason: '식상이 많은데 약한 사주. 안에서부터 갉아먹는다.' };
+  }
+
+  // 재성 있고 약 → 渴魂
+  if (counts.jaesung >= 2 && strength.strength === '약') {
+    return { typeId: 'galHon', reason: '재성이 보이는데 약한 사주. 닿을 수 없는 갈증.' };
+  }
+
+  // @ts-expect-error - fallthrough to Phase 4
   return { typeId: null as GhostTypeId, reason: '' };
 }
 
-// ─── Phase 5: 오행 디폴트 ─────────────────────
+// ─── Phase 4: 오행 + 강약 디폴트 ─────────────────────
 
-function classifyByPhase5(dayOhHaeng: string): { typeId: GhostTypeId; reason: string } {
-  const map: Record<string, { typeId: GhostTypeId; reason: string }> = {
-    '목': { typeId: 'cheBaek', reason: '목 일간의 기본 기질. 뿌리내리려 하나 쉽게 떠나지 못하는 넋.' },
-    '화': { typeId: 'gwangIn', reason: '화 일간의 기본 기질. 불꽃처럼 타오르는 도깨비불.' },
-    '토': { typeId: 'gyeonRyeong', reason: '토 일간의 기본 기질. 단단한 고치 속에 갇힌 영혼.' },
-    '금': { typeId: 'bulGaSal', reason: '금 일간의 기본 기질. 부서져도 다시 단련되는 존재.' },
-    '수': { typeId: 'ikGwi', reason: '수 일간의 기본 기질. 깊은 물속으로 끌려가는 기운.' },
+function classifyByPhase4(dayOhHaeng: string, strength: string, ohHaeng: SajuDataV2['ohHaeng']): { typeId: GhostTypeId; reason: string } {
+  // 약한 사주 → 일간 오행별 분기
+  if (strength === '약') {
+    const weakMap: Record<string, { typeId: GhostTypeId; reason: string }> = {
+      '목': { typeId: 'cheBaek', reason: '약한 목. 뿌리가 얕아 떠나지 못하는 넋.' },
+      '화': { typeId: 'yaChokGwi', reason: '약한 화. 바람에 흔들리는 촛불.' },
+      '토': { typeId: 'muMyeonGwi', reason: '약한 토. 단단하지 못해 얼굴을 잃은 사주.' },
+      '금': { typeId: 'gyeonRyeong', reason: '약한 금. 고치 속에 스스로를 가둔 사주.' },
+      '수': { typeId: 'ikGwi', reason: '약한 수. 깊은 감정에 빠지는 사주.' },
+    };
+    return weakMap[dayOhHaeng] || { typeId: 'cheBaek', reason: '약한 사주. 떠나지 못하는 넋.' };
+  }
+
+  // 강한 사주 → 일간 오행별 분기
+  const strongMap: Record<string, { typeId: GhostTypeId; reason: string }> = {
+    '목': { typeId: 'chipRyong', reason: '강한 목. 잠든 용, 아직 때를 기다리는 사주.' },
+    '화': { typeId: 'gwangIn', reason: '강한 화. 불꽃처럼 타오르는 도깨비불.' },
+    '토': { typeId: 'gyeonRyeong', reason: '강한 토. 단단한 고치 속에 갇힌 영혼.' },
+    '금': { typeId: 'bulGaSal', reason: '강한 금. 부서져도 다시 단련되는 존재.' },
+    '수': { typeId: 'galHon', reason: '강한 수. 깊은 갈증을 품은 사주.' },
   };
-
-  return map[dayOhHaeng] || { typeId: 'chipRyong', reason: '잠든 용. 아직 때를 기다리는 사주.' };
+  return strongMap[dayOhHaeng] || { typeId: 'chipRyong', reason: '잠든 용. 아직 때를 기다리는 사주.' };
 }
 
 // ─── 친화도 점수 (5-95) ─────────────────────
