@@ -59,17 +59,18 @@ export default function GhostDetection({
               style={{
                 fontFamily: "var(--font-primary)",
                 fontSize: i === 0
-                  ? "clamp(1.2rem, 4vw, 1.5rem)"
-                  : "clamp(1.05rem, 3vw, 1.25rem)",
+                  ? "clamp(1rem, 3.2vw, 1.3rem)"
+                  : "clamp(0.95rem, 2.8vw, 1.15rem)",
                 fontWeight: i === 0 ? 700 : 400,
                 color: i === 0 ? "#8b0000" : "#c4b896",
                 lineHeight: 2.2,
                 textAlign: "center",
                 wordBreak: "keep-all",
+                whiteSpace: "pre-line",
                 textShadow: i === 0
                   ? "0 0 20px rgba(139, 0, 0, 0.4)"
                   : "0 0 8px rgba(196, 184, 150, 0.1)",
-                letterSpacing: "0.03em",
+                letterSpacing: "0.02em",
               }}
             >
               {line}
