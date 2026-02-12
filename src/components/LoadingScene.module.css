@@ -1,0 +1,145 @@
+.container {
+  position: fixed;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #000;
+  z-index: 10;
+}
+
+.vignette {
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(
+    ellipse at center,
+    transparent 40%,
+    rgba(0, 0, 0, 0.7) 100%
+  );
+  pointer-events: none;
+  z-index: 1;
+}
+
+.inner {
+  position: relative;
+  z-index: 2;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 3rem;
+  max-width: min(90vw, 500px);
+  width: 100%;
+  padding: 0 1rem;
+}
+
+.content {
+  text-align: center;
+}
+
+.message {
+  font-family: var(--font-primary);
+  font-size: clamp(1rem, 3vw, 1.4rem);
+  font-weight: 400;
+  color: #d4c5a9;
+  text-shadow:
+    0 0 20px rgba(255, 69, 0, 0.3),
+    0 0 40px rgba(255, 69, 0, 0.1);
+  animation: pulse 2s ease-in-out infinite;
+}
+
+@keyframes pulse {
+  0%,
+  100% {
+    opacity: 0.7;
+    text-shadow:
+      0 0 20px rgba(255, 69, 0, 0.3),
+      0 0 40px rgba(255, 69, 0, 0.1);
+  }
+  50% {
+    opacity: 1;
+    text-shadow:
+      0 0 30px rgba(255, 69, 0, 0.5),
+      0 0 60px rgba(255, 69, 0, 0.2);
+  }
+}
+
+.reviewSection {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 0.8rem;
+}
+
+.reviewHeader {
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+  padding-bottom: 0.6rem;
+  border-bottom: 1px solid rgba(212, 197, 169, 0.15);
+}
+
+.reviewTab {
+  font-family: var(--font-primary);
+  font-size: 0.9rem;
+  font-weight: 700;
+  color: rgba(212, 197, 169, 0.8);
+}
+
+.reviewSub {
+  font-family: var(--font-primary);
+  font-size: 0.75rem;
+  font-weight: 400;
+  color: rgba(212, 197, 169, 0.65);
+}
+
+.reviewNotice {
+  font-family: var(--font-primary);
+  font-size: 0.7rem;
+  font-weight: 400;
+  color: rgba(212, 197, 169, 0.45);
+  margin-top: 0.15rem;
+}
+
+.reviewList {
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+  min-height: 180px;
+}
+
+.reviewItem {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  padding: 0.6rem 0;
+  border-bottom: 1px solid rgba(212, 197, 169, 0.07);
+}
+
+.reviewMeta {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.reviewName {
+  font-family: var(--font-primary);
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: rgba(212, 197, 169, 0.6);
+}
+
+.reviewDate {
+  font-family: var(--font-primary);
+  font-size: 0.7rem;
+  font-weight: 400;
+  color: rgba(212, 197, 169, 0.3);
+}
+
+.reviewText {
+  font-family: var(--font-primary);
+  font-size: clamp(0.78rem, 2vw, 0.88rem);
+  font-weight: 400;
+  color: rgba(212, 197, 169, 0.55);
+  line-height: 1.6;
+  word-break: keep-all;
+}

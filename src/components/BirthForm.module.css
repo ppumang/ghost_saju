@@ -1,0 +1,208 @@
+.container {
+  position: fixed;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #000;
+  z-index: 10;
+}
+
+.vignette {
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(
+    ellipse at center,
+    transparent 40%,
+    rgba(0, 0, 0, 0.7) 100%
+  );
+  pointer-events: none;
+  z-index: 1;
+}
+
+.form {
+  position: relative;
+  z-index: 2;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2rem;
+  padding: 2rem;
+  max-width: min(90vw, 500px);
+  max-height: 90vh;
+  overflow-y: auto;
+  width: 100%;
+}
+
+.overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 20;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(0, 0, 0, 0.85);
+}
+
+.popup {
+  max-width: min(85vw, 420px);
+  padding: 2rem 1.8rem;
+  border: 1px solid rgba(212, 197, 169, 0.3);
+  background: rgba(10, 10, 10, 0.95);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1.5rem;
+}
+
+.disclaimerText {
+  font-family: var(--font-primary);
+  font-size: clamp(0.8rem, 2vw, 0.95rem);
+  font-weight: 400;
+  color: rgba(212, 197, 169, 0.7);
+  line-height: 1.9;
+  text-align: center;
+  word-break: keep-all;
+}
+
+.disclaimerButton {
+  background: transparent;
+  border: 1px solid rgba(212, 197, 169, 0.4);
+  color: #d4c5a9;
+  font-family: var(--font-primary);
+  font-size: 0.95rem;
+  font-weight: 700;
+  padding: 0.7rem 2.5rem;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  min-width: 44px;
+  min-height: 44px;
+}
+
+.disclaimerButton:hover {
+  border-color: rgba(212, 197, 169, 0.7);
+  text-shadow: 0 0 15px rgba(255, 69, 0, 0.3);
+}
+
+.title {
+  font-family: var(--font-primary);
+  font-size: clamp(1.1rem, 3vw, 1.5rem);
+  font-weight: 700;
+  color: #d4c5a9;
+  text-shadow: 0 0 20px rgba(255, 69, 0, 0.3);
+  text-align: center;
+}
+
+.fields {
+  display: flex;
+  flex-direction: column;
+  gap: 1.2rem;
+  width: 100%;
+}
+
+.fieldGroup {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+}
+
+.label {
+  font-family: var(--font-primary);
+  font-size: 0.85rem;
+  color: rgba(212, 197, 169, 0.7);
+}
+
+.select {
+  width: 100%;
+  padding: 0.7rem 1rem;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(212, 197, 169, 0.3);
+  color: #d4c5a9;
+  font-family: var(--font-primary);
+  font-size: 1rem;
+  cursor: pointer;
+  transition: border-color 0.3s;
+  appearance: none;
+  -webkit-appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%23d4c5a9' stroke-width='1.5' fill='none'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 1rem center;
+}
+
+.select:focus {
+  outline: none;
+  border-color: rgba(212, 197, 169, 0.6);
+}
+
+.select option {
+  background: #1a1a1a;
+  color: #d4c5a9;
+}
+
+.toggleRow {
+  display: flex;
+  gap: 0;
+  width: 100%;
+}
+
+.toggleButton {
+  flex: 1;
+  padding: 0.65rem 0;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(212, 197, 169, 0.2);
+  color: rgba(212, 197, 169, 0.4);
+  font-family: var(--font-primary);
+  font-size: 0.95rem;
+  font-weight: 400;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  min-height: 44px;
+}
+
+.toggleButton:first-child {
+  border-right: none;
+}
+
+.toggleActive {
+  background: rgba(212, 197, 169, 0.1);
+  border-color: rgba(212, 197, 169, 0.5);
+  color: #d4c5a9;
+  font-weight: 700;
+}
+
+.error {
+  font-family: var(--font-primary);
+  font-size: 0.9rem;
+  color: #ff6b6b;
+  text-align: center;
+}
+
+.submitButton {
+  background: transparent;
+  border: 1px solid rgba(212, 197, 169, 0.5);
+  color: #d4c5a9;
+  font-family: var(--font-primary);
+  font-size: clamp(0.95rem, 2.5vw, 1.1rem);
+  font-weight: 700;
+  padding: 0.9rem 2.5rem;
+  cursor: pointer;
+  transition: all 0.4s ease;
+  text-shadow: 0 0 15px rgba(255, 69, 0, 0.3);
+  min-width: 44px;
+  min-height: 44px;
+}
+
+.submitButton:hover:not(:disabled) {
+  border-color: rgba(212, 197, 169, 0.8);
+  text-shadow:
+    0 0 20px rgba(255, 69, 0, 0.5),
+    0 0 40px rgba(255, 69, 0, 0.2);
+  box-shadow:
+    0 0 20px rgba(255, 69, 0, 0.1),
+    inset 0 0 20px rgba(255, 69, 0, 0.05);
+}
+
+.submitButton:disabled {
+  opacity: 0.3;
+  cursor: not-allowed;
+}

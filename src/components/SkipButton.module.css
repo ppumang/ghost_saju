@@ -1,0 +1,21 @@
+.skipButton {
+  position: fixed;
+  bottom: 2rem;
+  right: 2rem;
+  z-index: 100;
+  background: transparent;
+  border: 1px solid rgba(212, 197, 169, 0.3);
+  color: rgba(212, 197, 169, 0.5);
+  font-family: var(--font-primary);
+  font-size: 0.85rem;
+  padding: 0.6rem 1.2rem;
+  cursor: pointer;
+  transition: color 0.3s, border-color 0.3s;
+  min-width: 44px;
+  min-height: 44px;
+}
+
+.skipButton:hover {
+  color: rgba(212, 197, 169, 0.9);
+  border-color: rgba(212, 197, 169, 0.6);
+}

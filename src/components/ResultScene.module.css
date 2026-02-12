@@ -1,0 +1,155 @@
+.container {
+  position: fixed;
+  inset: 0;
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  background: #fafaf5;
+  z-index: 10;
+  overflow-y: auto;
+}
+
+.content {
+  max-width: min(90vw, 600px);
+  width: 100%;
+  padding: 3rem 1.5rem 4rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.title {
+  font-family: var(--font-primary);
+  font-size: clamp(1.6rem, 5vw, 2.2rem);
+  font-weight: 800;
+  color: #1a1a1a;
+  letter-spacing: 0.15em;
+  margin-bottom: 1rem;
+}
+
+.divider {
+  width: 60px;
+  border: none;
+  border-top: 2px solid #1a1a1a;
+  margin-bottom: 2rem;
+}
+
+.text {
+  font-family: var(--font-primary);
+  font-size: clamp(0.95rem, 2.5vw, 1.15rem);
+  font-weight: 400;
+  color: #1a1a1a;
+  line-height: 2;
+  text-align: left;
+  width: 100%;
+  white-space: pre-wrap;
+  word-break: keep-all;
+}
+
+.bold {
+  font-weight: 800;
+  color: #8b0000;
+}
+
+.reviewSection {
+  width: 100%;
+  margin-top: 3rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.8rem;
+}
+
+.reviewDivider {
+  width: 40px;
+  border: none;
+  border-top: 1px solid #ccc;
+  margin-bottom: 0.5rem;
+}
+
+.reviewTitle {
+  font-family: var(--font-primary);
+  font-size: clamp(1rem, 3vw, 1.2rem);
+  font-weight: 700;
+  color: #1a1a1a;
+}
+
+.reviewSub {
+  font-family: var(--font-primary);
+  font-size: 0.8rem;
+  font-weight: 400;
+  color: #888;
+  margin-bottom: 0.3rem;
+}
+
+.reviewInput {
+  width: 100%;
+  padding: 0.8rem 1rem;
+  border: 1px solid #ccc;
+  background: #fff;
+  color: #1a1a1a;
+  font-family: var(--font-primary);
+  font-size: 0.95rem;
+  line-height: 1.6;
+  resize: vertical;
+  transition: border-color 0.3s;
+}
+
+.reviewInput:focus {
+  outline: none;
+  border-color: #888;
+}
+
+.reviewInput::placeholder {
+  color: #aaa;
+}
+
+.reviewSubmitButton {
+  background: #1a1a1a;
+  border: none;
+  color: #fafaf5;
+  font-family: var(--font-primary);
+  font-size: 0.9rem;
+  font-weight: 700;
+  padding: 0.7rem 2rem;
+  cursor: pointer;
+  transition: opacity 0.3s;
+  min-width: 44px;
+  min-height: 44px;
+}
+
+.reviewSubmitButton:hover:not(:disabled) {
+  opacity: 0.8;
+}
+
+.reviewSubmitButton:disabled {
+  opacity: 0.3;
+  cursor: not-allowed;
+}
+
+.reviewThanks {
+  font-family: var(--font-primary);
+  font-size: 0.95rem;
+  color: #555;
+  padding: 1rem 0;
+}
+
+.restartButton {
+  margin-top: 3rem;
+  background: transparent;
+  border: 1px solid #1a1a1a;
+  color: #1a1a1a;
+  font-family: var(--font-primary);
+  font-size: 0.95rem;
+  font-weight: 700;
+  padding: 0.8rem 2rem;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  min-width: 44px;
+  min-height: 44px;
+}
+
+.restartButton:hover {
+  background: #1a1a1a;
+  color: #fafaf5;
+}
