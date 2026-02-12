@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useCallback } from "react";
+import type { SajuDataV2 } from "@/lib/saju/types";
 
 export type SceneState =
   | "intro"
@@ -28,7 +29,7 @@ export interface FortuneSection {
 
 export interface FortuneResult {
   sections: FortuneSection[];
-  sajuData?: Record<string, unknown>;
+  sajuData?: SajuDataV2;
   readingId?: string | null;
 }
 

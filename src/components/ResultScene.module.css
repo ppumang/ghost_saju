@@ -106,6 +106,32 @@
   box-shadow: 0 0 10px rgba(139, 0, 0, 0.3);
 }
 
+/* ─── 생년월일 요약 ──────────────────────── */
+
+.birthSummary {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.3rem;
+  justify-content: center;
+  align-items: center;
+  margin-bottom: 2rem;
+  font-family: var(--font-primary);
+  font-size: 0.85rem;
+  font-weight: 500;
+  color: #888;
+}
+
+.birthDot {
+  color: #444;
+}
+
+.dataDivider {
+  width: 100%;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(139, 0, 0, 0.4), transparent);
+  margin: 1rem 0 2rem;
+}
+
 /* ─── 섹션 ──────────────────────────────── */
 
 .section {

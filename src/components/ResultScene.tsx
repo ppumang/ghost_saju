@@ -4,6 +4,10 @@ import { useState, useEffect, useRef, useCallback } from "react";
 import { motion } from "framer-motion";
 import styles from "./ResultScene.module.css";
 import { SECTIONS } from "@/lib/saju/section-constants";
+import type { SajuDataV2 } from "@/lib/saju/types";
+import SajuChart from "./SajuChart";
+import OhHaengChart from "./OhHaengChart";
+import DaeUnTimeline from "./DaeUnTimeline";
 
 interface FortuneSection {
   id: string;
@@ -14,6 +18,7 @@ interface FortuneSection {
 
 interface ResultSceneProps {
   sections: FortuneSection[];
+  sajuData?: SajuDataV2;
   readingId?: string | null;
   onRestart: () => void;
 }
@@ -38,6 +43,7 @@ const sectionIconMap = Object.fromEntries(
 
 export default function ResultScene({
   sections,
+  sajuData,
   readingId,
   onRestart,
 }: ResultSceneProps) {
@@ -144,6 +150,32 @@ export default function ResultScene({
       <div className={styles.content}>
         <h1 className={styles.title}>귀신사주</h1>
         <div className={styles.titleDivider} />
+
+        {/* 사주 데이터 시각화 */}
+        {sajuData && (
+          <>
+            <div className={styles.birthSummary}>
+              <span>
+                {sajuData.input.year}년 {sajuData.input.month}월{' '}
+                {sajuData.input.day}일
+              </span>
+              <span className={styles.birthDot}>·</span>
+              <span>
+                {sajuData.input.calendarType === 'solar' ? '양력' : '음력'}
+              </span>
+              <span className={styles.birthDot}>·</span>
+              <span>
+                {sajuData.input.gender === 'male' ? '남' : '여'}성
+              </span>
+              <span className={styles.birthDot}>·</span>
+              <span>{sajuData.zodiac}띠</span>
+            </div>
+            <SajuChart sajuData={sajuData} />
+            <OhHaengChart sajuData={sajuData} />
+            <DaeUnTimeline sajuData={sajuData} />
+            <div className={styles.dataDivider} />
+          </>
+        )}
 
         {/* 13개 섹션 */}
         {sections.map((section) => (

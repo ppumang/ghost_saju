@@ -61,6 +61,7 @@ export default function Home() {
           <ResultScene
             key="result"
             sections={fortuneResult.sections}
+            sajuData={fortuneResult.sajuData}
             readingId={fortuneResult.readingId}
             onRestart={restart}
           />
