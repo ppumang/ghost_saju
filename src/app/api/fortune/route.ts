@@ -5,6 +5,8 @@ import { sendResultEmail } from "@/lib/email/send";
 import { GHOST_TYPES } from "@/lib/saju/ghost-types";
 import type { SajuDataV2, GhostClassification, GhostTypeId } from "@/lib/saju/types";
 
+export const maxDuration = 120;
+
 const openai = new OpenAI();
 const MODEL = "gpt-5.2";
 
