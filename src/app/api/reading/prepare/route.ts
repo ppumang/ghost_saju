@@ -50,16 +50,24 @@ export async function POST(request: Request) {
     }
 
     // 3. 이메일 즉시 발송
+    let emailStatus: string = 'skipped';
     if (email) {
       const ghostDef = ghostClassification
         ? GHOST_TYPES[ghostClassification.typeId as GhostTypeId]
         : undefined;
 
-      sendResultEmail(email, readingId, ghostDef?.hanja, ghostDef?.reading)
-        .catch(console.error);
+      try {
+        const emailId = await sendResultEmail(email, readingId, ghostDef?.hanja, ghostDef?.reading);
+        emailStatus = emailId ? `sent:${emailId}` : 'failed:null_response';
+      } catch (err) {
+        emailStatus = `error:${err instanceof Error ? err.message : String(err)}`;
+        console.error("Email send error:", err);
+      }
+    } else {
+      emailStatus = 'skipped:no_email';
     }
 
-    return NextResponse.json({ readingId });
+    return NextResponse.json({ readingId, emailStatus });
   } catch (error) {
     console.error("Reading prepare error:", error);
     return NextResponse.json(

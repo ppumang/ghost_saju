@@ -83,7 +83,11 @@ function SuccessContent() {
             body: JSON.stringify({ sajuData, ghostClassification, email, purchaseId }),
           });
 
-          const { readingId } = await prepareRes.json();
+          const { readingId, emailStatus } = await prepareRes.json();
+
+          if (emailStatus && !emailStatus.startsWith('sent')) {
+            console.error('Email status:', emailStatus);
+          }
 
           setStage('complete');
 
