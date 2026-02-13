@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { createPendingReading, linkPurchaseReading } from "@/lib/supabase/queries";
 import { sendResultEmail } from "@/lib/email/send";
+import { sendSlackWebhook } from "@/lib/slack";
 import { GHOST_TYPES } from "@/lib/saju/ghost-types";
 import type { SajuDataV2, GhostClassification, GhostTypeId } from "@/lib/saju/types";
 
@@ -59,9 +60,15 @@ export async function POST(request: Request) {
       try {
         const emailId = await sendResultEmail(email, readingId, ghostDef?.hanja, ghostDef?.reading);
         emailStatus = emailId ? `sent:${emailId}` : 'failed:null_response';
+        if (emailId) {
+          sendSlackWebhook(`📧 [이메일 발송 성공] ${email}`).catch(() => {});
+        } else {
+          sendSlackWebhook(`❌ [이메일 발송 실패] ${email} — null response`).catch(() => {});
+        }
       } catch (err) {
         emailStatus = `error:${err instanceof Error ? err.message : String(err)}`;
         console.error("Email send error:", err);
+        sendSlackWebhook(`❌ [이메일 발송 에러] ${email} — ${err instanceof Error ? err.message : String(err)}`).catch(() => {});
       }
     } else {
       emailStatus = 'skipped:no_email';
