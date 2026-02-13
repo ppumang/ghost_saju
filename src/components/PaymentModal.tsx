@@ -39,6 +39,7 @@ export default function PaymentModal({
   const [requesting, setRequesting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const widgetsRenderedRef = useRef(false);
+  const paymentRequestedRef = useRef(false);
 
   // TossPayments SDK 초기화
   useEffect(() => {
@@ -90,6 +91,7 @@ export default function PaymentModal({
   useEffect(() => {
     if (!isOpen) {
       widgetsRenderedRef.current = false;
+      paymentRequestedRef.current = false;
       setReady(false);
       setWidgets(null);
       setError(null);
@@ -108,7 +110,8 @@ export default function PaymentModal({
   }, [isOpen]);
 
   const handlePayment = async () => {
-    if (requesting || !widgets) return;
+    if (requesting || !widgets || paymentRequestedRef.current) return;
+    paymentRequestedRef.current = true;
     setRequesting(true);
     setError(null);
 
@@ -149,6 +152,7 @@ export default function PaymentModal({
       setError(
         err instanceof Error ? err.message : "결제 요청에 실패했습니다."
       );
+      paymentRequestedRef.current = false;
       setRequesting(false);
     }
   };
