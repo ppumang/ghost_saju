@@ -1,6 +1,6 @@
 import { Solar, Lunar } from 'lunar-javascript';
 import type {
-  BirthInput, SajuData, SajuDataV2, SaJu, Ju, GanJi,
+  BirthInput, SajuData, SajuDataV2, SajuDataV3, SaJu, Ju, GanJi,
   CheonGan, JiJi, DaeUnInfo, DaeUnItem, SeUnItem, SpecialPalaces,
 } from './types';
 import {
@@ -14,8 +14,11 @@ import { analyzeStrength, determineYongShin } from './strength-analyzer';
 import { analyzeExpandedSinSal } from './sinsal-expanded';
 import { analyzeGuiin } from './guiin-analyzer';
 import { analyzeRelationships } from './relationships';
+import { analyzeGongMang } from './gongmang-analyzer';
+import { analyzeGeokGuk } from './geokguk-analyzer';
+import { buildInterpretationData } from './interpretation-tables';
 
-const ENGINE_VERSION = '2.0.0';
+const ENGINE_VERSION = '3.0.0';
 
 // 중국어 간지 문자열("甲子")을 한국어 GanJi로 변환
 function convertGanJi(cnGanJi: string): GanJi {
@@ -74,16 +77,15 @@ function createLunarSafe(
 }
 
 /**
- * 메인 사주 계산 엔진
+ * 메인 사주 계산 엔진 (v3)
  */
-export function calculateSaju(input: BirthInput): SajuData {
+export function calculateSaju(input: BirthInput): SajuDataV3 {
   const resolved = resolveTime(input.hour);
 
   // 1. Solar/Lunar 객체 생성
   let lunar: InstanceType<typeof Lunar>;
 
   if (resolved.isUnknown) {
-    // 시간 모름: 12:00으로 기본값 (시주 미사용)
     if (input.calendarType === 'solar') {
       const solar = Solar.fromYmdHms(input.year, input.month, input.day, 12, 0, 0);
       lunar = solar.getLunar();
@@ -105,7 +107,7 @@ export function calculateSaju(input: BirthInput): SajuData {
   // 2. EightChar 객체
   const eightChar = lunar.getEightChar();
 
-  // 야자시 처리: sect=2면 야자시(23시) 다음날 간지 사용
+  // 야자시 처리
   if (resolved.isYajaси) {
     eightChar.setSect(2);
   } else {
@@ -117,7 +119,7 @@ export function calculateSaju(input: BirthInput): SajuData {
   const monthGanJi = convertGanJi(eightChar.getMonth());
   const dayGanJi = convertGanJi(eightChar.getDay());
 
-  // 4. 각 주의 십신 (일간 기준)
+  // 4. 각 주의 십신
   const yearSipShinGan = convertSipShin(eightChar.getYearShiShenGan());
   const yearSipShinJi = (eightChar.getYearShiShenZhi() as string[]).map(convertSipShin);
   const monthSipShinGan = convertSipShin(eightChar.getMonthShiShenGan());
@@ -170,7 +172,7 @@ export function calculateSaju(input: BirthInput): SajuData {
     naYin: dayNaYin,
   };
 
-  // 시주 (모름이면 null)
+  // 시주
   let timeJu: Ju | null = null;
   if (!resolved.isUnknown) {
     const timeGanJi = convertGanJi(eightChar.getTime());
@@ -195,8 +197,11 @@ export function calculateSaju(input: BirthInput): SajuData {
   // 8. 오행 분석
   const ohHaeng = analyzeOhHaeng(saju);
 
-  // 9. 신살 분석 (확장 신살에서 레거시 필드 파생)
-  const expandedSinSalResult = analyzeExpandedSinSal(saju);
+  // 9. 공망 계산 (신살보다 먼저 — 공망살에 필요)
+  const gongMang = analyzeGongMang(saju);
+
+  // 10. 확장 신살 분석 (16종) — 공망 결과 주입
+  const expandedSinSalResult = analyzeExpandedSinSal(saju, gongMang);
   const sinSal = {
     doHwa: expandedSinSalResult.doHwa,
     yeokMa: expandedSinSalResult.yeokMa,
@@ -204,7 +209,7 @@ export function calculateSaju(input: BirthInput): SajuData {
     details: expandedSinSalResult.details,
   };
 
-  // 10. 대운 계산
+  // 11. 대운 계산
   const genderCode = input.gender === 'male' ? 1 : 0;
   const yun = eightChar.getYun(genderCode, 2);
   const daYunList = yun.getDaYun(10);
@@ -225,7 +230,6 @@ export function calculateSaju(input: BirthInput): SajuData {
       endYear: dy.getEndYear(),
     });
 
-    // 각 대운의 세운(유년)
     const liuNianList = dy.getLiuNian();
     for (const ln of liuNianList) {
       const lnGanJi = ln.getGanZhi();
@@ -243,7 +247,7 @@ export function calculateSaju(input: BirthInput): SajuData {
     items: daeUnItems,
   };
 
-  // 11. 특수 궁위
+  // 12. 특수 궁위
   const specialPalaces: SpecialPalaces = {
     taeWon: convertGanJiStr(eightChar.getTaiYuan()),
     taeWonNaYin: convertNaYin(eightChar.getTaiYuanNaYin()),
@@ -253,10 +257,10 @@ export function calculateSaju(input: BirthInput): SajuData {
     shenGongNaYin: convertNaYin(eightChar.getShenGongNaYin()),
   };
 
-  // 12. 띠 (년지 기준)
+  // 13. 띠
   const zodiac = JI_TO_ZODIAC[yearGanJi.ji] || '';
 
-  // 13. 일간 정보
+  // 14. 일간 정보
   const dayMaster = {
     gan: dayGanJi.gan,
     ohHaeng: dayGanJi.ganOhHaeng,
@@ -264,7 +268,7 @@ export function calculateSaju(input: BirthInput): SajuData {
     description: DAY_MASTER_DESC[dayGanJi.gan],
   };
 
-  // 14. 음력 날짜 정보
+  // 15. 음력 날짜 정보
   const lunarDate = {
     year: lunar.getYear(),
     month: Math.abs(lunar.getMonth()),
@@ -273,20 +277,26 @@ export function calculateSaju(input: BirthInput): SajuData {
     lunarDateStr: `음력 ${lunar.getYear()}년 ${lunar.getMonth() < 0 ? '윤' : ''}${Math.abs(lunar.getMonth())}월 ${lunar.getDay()}일`,
   };
 
-  // 15. 강약 판정
+  // 16. 강약 판정
   const strength = analyzeStrength(saju);
 
-  // 16. 용신/희신/기신
+  // 17. 용신/희신/기신
   const yongShin = determineYongShin(dayGanJi.ganOhHaeng, strength.strength);
 
-  // 17. 확장 신살 (8종 + 기둥별) — step 9에서 이미 계산
+  // 18. 확장 신살
   const expandedSinSal = expandedSinSalResult;
 
-  // 18. 귀인 분석 (3종 + 시기별)
+  // 19. 귀인 분석 (8종 + 시기별)
   const guiin = analyzeGuiin(saju);
 
-  // 19. 합/충/원진 관계
+  // 20. 합/충/원진/삼합/육합/방합/형/파 관계
   const relationships = analyzeRelationships(saju);
+
+  // 21. 격국 판정
+  const geokGuk = analyzeGeokGuk(saju);
+
+  // 22. 결정론적 해석 데이터
+  const interpretations = buildInterpretationData(yongShin.yongShin);
 
   return {
     input,
@@ -306,10 +316,14 @@ export function calculateSaju(input: BirthInput): SajuData {
     expandedSinSal,
     guiin,
     relationships,
-  } as SajuDataV2;
+    // v3 확장 필드
+    gongMang,
+    geokGuk,
+    interpretations,
+  };
 }
 
-// 간지 문자열 변환 헬퍼 (2글자 중국어 → 한국어)
+// 간지 문자열 변환 헬퍼
 function convertGanJiStr(cnGanJi: string): string {
   if (!cnGanJi || cnGanJi.length < 2) return cnGanJi;
   const gan = CN_GAN_TO_KR[cnGanJi[0]] || cnGanJi[0];

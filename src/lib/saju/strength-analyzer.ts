@@ -73,21 +73,26 @@ export function determineYongShin(
   dayOhHaeng: OhHaeng,
   strength: StrengthResult['strength']
 ): YongShinResult {
-  const isStrong = strength === '태강' || strength === '강';
-
   let yongShin: OhHaeng;
   let huiShin: OhHaeng;
   let giShin: OhHaeng;
 
-  if (isStrong) {
+  if (strength === '태강' || strength === '강') {
     // 강하면: 설기(식상) = 일간이 생하는 오행이 용신
     yongShin = PRODUCING[dayOhHaeng];
-    // 희신: 용신을 생하는 오행 또는 일간을 극하는 오행(관성)
-    huiShin = CONTROLLING[dayOhHaeng]; // 관성
-    // 기신: 일간을 돕는 오행 (비겁 = 같은 오행)
-    giShin = PRODUCED_BY[dayOhHaeng]; // 인성
+    // 희신: 일간을 극하는 오행(관성)
+    huiShin = CONTROLLING[dayOhHaeng];
+    // 기신: 일간을 돕는 오행 (인성)
+    giShin = PRODUCED_BY[dayOhHaeng];
+  } else if (strength === '중화') {
+    // 중화: 균형 유지를 위해 순환(설기)을 돕는 식상이 용신
+    yongShin = PRODUCING[dayOhHaeng]; // 식상 (온화한 설기)
+    // 희신: 재성 (식상의 순환 연장)
+    huiShin = CONTROLLING[dayOhHaeng];
+    // 기신: 관성 (균형을 깨뜨리는 극)
+    giShin = CONTROLLED_BY[dayOhHaeng];
   } else {
-    // 약하면: 생(인성) = 일간을 생하는 오행이 용신
+    // 약/태약: 생(인성) = 일간을 생하는 오행이 용신
     yongShin = PRODUCED_BY[dayOhHaeng];
     // 희신: 비겁 (같은 오행)
     huiShin = dayOhHaeng;

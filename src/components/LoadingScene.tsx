@@ -45,7 +45,15 @@ export default function LoadingScene() {
       exit={{ opacity: 0 }}
       transition={{ duration: 0.6, ease: "easeInOut" }}
     >
-      <div className={styles.vignette} />
+      <video
+        className={styles.bgVideo}
+        src="/videos/ghost_dance.mp4"
+        autoPlay
+        loop
+        muted
+        playsInline
+      />
+      <div className={styles.overlay} />
 
       <div className={styles.inner}>
         <div className={styles.content}>

@@ -24,7 +24,7 @@ export async function POST(request: Request) {
     return NextResponse.json({ sent: !!emailId, emailId });
   } catch (error) {
     console.error('Send result email error:', error);
-    sendSlackWebhook(`❌ [이메일 발송 에러] ${email} — ${error instanceof Error ? error.message : String(error)}`).catch(() => {});
+    sendSlackWebhook(`❌ [이메일 발송 에러] ${error instanceof Error ? error.message : String(error)}`).catch(() => {});
     return NextResponse.json(
       { error: '이메일 발송에 실패했습니다.' },
       { status: 500 }

@@ -1,13 +1,18 @@
 "use client";
 
 import { useState, useEffect, useRef } from "react";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 import { track } from "@/lib/mixpanel";
 import { notifySlack } from "@/lib/slack";
+import type { SajuDataV2 } from "@/lib/saju/types";
+import SajuChart from "./SajuChart";
+import OhHaengChart from "./OhHaengChart";
+import DaeUnTimeline from "./DaeUnTimeline";
 
 interface ClassicResultSceneProps {
   text: string;
   readingId?: string | null;
+  sajuData?: SajuDataV2;
   onRestart?: () => void;
   isStaticPage?: boolean;
 }
@@ -30,12 +35,14 @@ function renderBold(text: string) {
 export default function ClassicResultScene({
   text,
   readingId,
+  sajuData,
   onRestart,
   isStaticPage = false,
 }: ClassicResultSceneProps) {
   const [review, setReview] = useState("");
   const [submitted, setSubmitted] = useState(false);
   const [submitting, setSubmitting] = useState(false);
+  const [chartOpen, setChartOpen] = useState(true);
   const hasTracked = useRef(false);
 
   useEffect(() => {
@@ -119,6 +126,70 @@ export default function ClassicResultScene({
             boxShadow: "0 0 10px rgba(139, 0, 0, 0.3)",
           }}
         />
+
+        {/* 사주 시각화 토글 */}
+        {sajuData && (
+          <>
+            <button
+              onClick={() => setChartOpen((v) => !v)}
+              style={{
+                width: "100%",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "space-between",
+                padding: "0.7rem 0",
+                background: "transparent",
+                border: "none",
+                borderBottom: "1px solid rgba(212, 197, 169, 0.15)",
+                cursor: "pointer",
+                marginBottom: "1.5rem",
+              }}
+            >
+              <span
+                style={{
+                  fontFamily: "var(--font-primary)",
+                  fontSize: "clamp(0.8rem, 2vw, 0.9rem)",
+                  color: "rgba(212, 197, 169, 0.7)",
+                  letterSpacing: "0.03em",
+                }}
+              >
+                {sajuData.input.year}년 {sajuData.input.month}월{" "}
+                {sajuData.input.day}일
+                <span style={{ margin: "0 0.3em", opacity: 0.4 }}>·</span>
+                {sajuData.input.calendarType === "solar" ? "양력" : "음력"}
+                <span style={{ margin: "0 0.3em", opacity: 0.4 }}>·</span>
+                {sajuData.input.gender === "male" ? "남" : "여"}성
+                <span style={{ margin: "0 0.3em", opacity: 0.4 }}>·</span>
+                {sajuData.zodiac}띠
+              </span>
+              <span
+                style={{
+                  color: "rgba(212, 197, 169, 0.5)",
+                  fontSize: "0.8rem",
+                  transition: "transform 0.3s",
+                  transform: chartOpen ? "rotate(180deg)" : "rotate(0deg)",
+                }}
+              >
+                ▾
+              </span>
+            </button>
+            <AnimatePresence>
+              {chartOpen && (
+                <motion.div
+                  initial={{ height: 0, opacity: 0 }}
+                  animate={{ height: "auto", opacity: 1 }}
+                  exit={{ height: 0, opacity: 0 }}
+                  transition={{ duration: 0.4, ease: "easeInOut" }}
+                  style={{ overflow: "hidden", width: "100%", marginBottom: "1.5rem" }}
+                >
+                  <SajuChart sajuData={sajuData} />
+                  <OhHaengChart sajuData={sajuData} />
+                  <DaeUnTimeline sajuData={sajuData} />
+                </motion.div>
+              )}
+            </AnimatePresence>
+          </>
+        )}
 
         {/* 본문 */}
         <p

@@ -1,21 +1,38 @@
 "use client";
 
 import { useState, useEffect, useRef } from "react";
+import { motion, AnimatePresence } from "framer-motion";
 import { track } from "@/lib/mixpanel";
+import { reviews } from "@/data/reviews";
+import type { SajuDataV2 } from "@/lib/saju/types";
 import ClassicResultScene from "./ClassicResultScene";
+import styles from "./LoadingScene.module.css";
+
+const messages = [
+  "귀신이 니 사주를 풀고 있다...",
+  "운명의 실타래를 잡고 있다...",
+  "과거와 미래를 이어보는 중이다...",
+  "이기 좀 시간이 걸린다...",
+];
 
 interface ResultPollingProps {
   readingId: string;
+  sajuData?: SajuDataV2;
 }
 
 /**
  * AI 생성이 아직 완료되지 않은 reading을 polling하여
  * 텍스트가 준비되면 ClassicResultScene을 렌더한다.
  */
-export default function ResultPolling({ readingId }: ResultPollingProps) {
+export default function ResultPolling({ readingId, sajuData }: ResultPollingProps) {
   const [text, setText] = useState<string | null>(null);
   const [error, setError] = useState(false);
   const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
+
+  // Loading screen state
+  const [msgIndex, setMsgIndex] = useState(0);
+  const [visibleReviews, setVisibleReviews] = useState<number[]>([0, 1, 2]);
+  const reviewRef = useRef(3);
 
   useEffect(() => {
     track("result_page_polling_started", { readingId });
@@ -66,9 +83,32 @@ export default function ResultPolling({ readingId }: ResultPollingProps) {
     };
   }, [readingId]);
 
+  // Message rotation
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setMsgIndex((prev) => (prev + 1) % messages.length);
+    }, 3000);
+    return () => clearInterval(interval);
+  }, []);
+
+  // Review carousel
+  useEffect(() => {
+    const interval = setInterval(() => {
+      const next = reviewRef.current % reviews.length;
+      reviewRef.current += 1;
+      setVisibleReviews((prev) => [...prev.slice(1), next]);
+    }, 2500);
+    return () => clearInterval(interval);
+  }, []);
+
   if (text) {
     return (
-      <ClassicResultScene text={text} readingId={readingId} isStaticPage />
+      <ClassicResultScene
+        text={text}
+        readingId={readingId}
+        sajuData={sajuData}
+        isStaticPage
+      />
     );
   }
 
@@ -112,47 +152,87 @@ export default function ResultPolling({ readingId }: ResultPollingProps) {
   }
 
   return (
-    <div
-      style={{
-        minHeight: "100vh",
-        display: "flex",
-        flexDirection: "column",
-        alignItems: "center",
-        justifyContent: "center",
-        background: "#0a0a0a",
-        gap: "1.5rem",
-        fontFamily: "var(--font-primary)",
-      }}
+    <motion.div
+      className={styles.container}
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      exit={{ opacity: 0 }}
+      transition={{ duration: 0.6, ease: "easeInOut" }}
     >
-      <p
-        style={{
-          color: "#8b0000",
-          fontSize: "1.8rem",
-          letterSpacing: "0.2em",
-          fontWeight: "bold",
-          animation: "pulse 2s ease-in-out infinite",
-        }}
-      >
-        鬼
-      </p>
-      <p
-        style={{
-          color: "#d4c5a9",
-          fontSize: "clamp(0.95rem, 2.5vw, 1.1rem)",
-          letterSpacing: "0.08em",
-        }}
-      >
-        사주 풀이를 준비하고 있습니다...
-      </p>
-      <p style={{ color: "#666", fontSize: "0.75rem", lineHeight: 1.8 }}>
-        잠시만 기다려주세요. 자동으로 표시됩니다.
-      </p>
-      <style>{`
-        @keyframes pulse {
-          0%, 100% { opacity: 0.4; }
-          50% { opacity: 1; }
-        }
-      `}</style>
-    </div>
+      <video
+        className={styles.bgVideo}
+        src="/videos/ghost_dance.mp4"
+        autoPlay
+        loop
+        muted
+        playsInline
+      />
+      <div className={styles.overlay} />
+
+      <div className={styles.inner}>
+        <div className={styles.content}>
+          <AnimatePresence mode="wait">
+            <motion.p
+              key={msgIndex}
+              className={styles.message}
+              initial={{ opacity: 0, y: 8 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -8 }}
+              transition={{ duration: 0.5, ease: "easeInOut" }}
+            >
+              {messages[msgIndex]}
+            </motion.p>
+          </AnimatePresence>
+
+          <p
+            style={{
+              fontFamily: "var(--font-primary)",
+              fontSize: "0.75rem",
+              color: "rgba(212, 197, 169, 0.4)",
+              marginTop: "0.8rem",
+            }}
+          >
+            약 1~2분 소요됩니다
+          </p>
+        </div>
+
+        <div className={styles.reviewSection}>
+          <div className={styles.reviewHeader}>
+            <span className={styles.reviewTab}>실시간 리뷰보기</span>
+            <span className={styles.reviewSub}>
+              사주 풀이 후 누구나 남길 수 있는 내돈내산 리얼 리뷰 입니다
+            </span>
+            <span className={styles.reviewNotice}>
+              사주 파일은 pdf로 제공됩니다
+            </span>
+          </div>
+
+          <div className={styles.reviewList}>
+            <AnimatePresence mode="popLayout">
+              {visibleReviews.map((ri, i) => (
+                <motion.div
+                  key={`${ri}-${i}-${reviewRef.current}`}
+                  className={styles.reviewItem}
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -20 }}
+                  transition={{ duration: 0.4, ease: "easeOut" }}
+                >
+                  <div className={styles.reviewMeta}>
+                    <span className={styles.reviewName}>
+                      {reviews[ri].name}
+                    </span>
+                    <span className={styles.reviewDate}>
+                      {reviews[ri].date}
+                    </span>
+                  </div>
+                  <p className={styles.reviewText}>{reviews[ri].text}</p>
+                </motion.div>
+              ))}
+            </AnimatePresence>
+          </div>
+        </div>
+      </div>
+    </motion.div>
   );
 }

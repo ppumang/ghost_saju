@@ -3,7 +3,7 @@ import OpenAI from 'openai';
 import { calculateSaju } from '@/lib/saju/engine';
 import { classifyGhost } from '@/lib/saju/ghost-classifier';
 import { buildPreviewPrompt } from '@/lib/saju/prompt-builder-v2';
-import type { BirthInput, SajuDataV2 } from '@/lib/saju/types';
+import type { BirthInput, SajuDataV3 } from '@/lib/saju/types';
 
 const openai = new OpenAI();
 
@@ -34,10 +34,10 @@ export async function POST(request: Request) {
       gender,
     };
 
-    // [1] 사주 계산 (확장 엔진 v2)
-    let sajuData: SajuDataV2;
+    // [1] 사주 계산 (확장 엔진 v3)
+    let sajuData: SajuDataV3;
     try {
-      sajuData = calculateSaju(input) as SajuDataV2;
+      sajuData = calculateSaju(input) as SajuDataV3;
     } catch (engineErr) {
       const msg = engineErr instanceof Error ? engineErr.message : '';
       // 유효하지 않은 날짜 (음력에 존재하지 않는 일자 등)

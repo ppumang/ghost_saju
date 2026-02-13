@@ -78,12 +78,17 @@ export function useIntroSequence() {
     notifySlack(`🔮 [생년월일 입력] ${data.gender === "male" ? "남" : "여"} ${data.year}년 ${data.month}월 ${data.day}일 ${data.hour}`);
     trackInitiateCheckout();
 
+    const minDelay = new Promise((resolve) => setTimeout(resolve, 10000));
+
     try {
-      const res = await fetch("/api/saju", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(data),
-      });
+      const [res] = await Promise.all([
+        fetch("/api/saju", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(data),
+        }),
+        minDelay,
+      ]);
 
       if (!res.ok) {
         throw new Error("사주 계산에 실패했습니다. 다시 시도해주세요.");

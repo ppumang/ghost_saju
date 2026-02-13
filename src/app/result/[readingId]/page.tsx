@@ -2,6 +2,7 @@ import type { Metadata } from 'next';
 import { getReading } from '@/lib/supabase/queries';
 import ClassicResultScene from '@/components/ClassicResultScene';
 import ResultPolling from '@/components/ResultPolling';
+import type { SajuDataV2 } from '@/lib/saju/types';
 
 export const metadata: Metadata = {
   title: '귀신사주 - 사주 풀이 결과',
@@ -82,15 +83,18 @@ export default async function ResultPage({
     classicText = (rt as Record<string, unknown>).text as string ?? null;
   }
 
+  const sajuData = reading.saju_data as SajuDataV2 | undefined;
+
   // 텍스트가 아직 없으면 (AI 생성 중) polling으로 대기
   if (!classicText) {
-    return <ResultPolling readingId={readingId} />;
+    return <ResultPolling readingId={readingId} sajuData={sajuData} />;
   }
 
   return (
     <ClassicResultScene
       text={classicText}
       readingId={readingId}
+      sajuData={sajuData}
       isStaticPage
     />
   );
